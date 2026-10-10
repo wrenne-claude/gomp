@@ -48,12 +48,12 @@ One memorable element, everything else quiet: the **Corona** (the activity visua
 | width < 900 | rail collapses to icons only (it already is), inspector is overlay, status strip hides cwd |
 | width ≥ 1360 | inspector docked (360px) |
 | width ≥ 2000 | conversation column capped at 920px and centred; inspector widens to 440px; Subagents shows lanes side by side |
-| height < 820 ("short") | `Tokens.density = compact`: vertical paddings −25%, composer max 6 lines, titlebar 40px, status strip merged into the composer footer |
+| height < 820 ("short") | `Theme.compact`: tighter vertical rhythm, composer max 6 lines, titlebar 40px. The 28px status strip stays; merging it into the composer was dropped because the readouts need a fixed place. |
 
 The ultrawide target (2560×720) is "wide and short": compact density, docked inspector, centred
 conversation, and Subagents lanes laid out horizontally.
 
-## Tokens (single source: `qml/Gomp/Theme/*.qml` singletons)
+## Tokens (single source: `qml/Theme/Theme.qml`; shell state in `qml/Theme/Ui.qml`)
 
 ### Colour (dark is the hero)
 | Token | Dark | Light | Use |
@@ -91,14 +91,18 @@ Text on the accent uses `onAccent` (#1A1206 dark / #FFFFFF light). Contrast pair
 | `display` | Barlow | 28/34 | 600 |
 | `title` | Barlow | 20/26 | 600 |
 | `heading` | Barlow | 16/22 | 600 |
-| `body` | Barlow | 14/21 | 400 |
-| `bodyStrong` | Barlow | 14/21 | 500 |
+| `body` | Barlow | 14/19.6 (1.4) | 400 |
+| `bodyStrong` | Barlow | 14/19.6 (1.4) | 500 |
 | `caption` | Barlow | 12/16 | 500 |
 | `readout` | Barlow Semi Condensed | 13/16 | 500, tnum |
 | `readoutLarge` | Barlow Semi Condensed | 22/26 | 500, tnum |
 | `code` | JetBrains Mono | 13/20 | 400 |
 
-Prose is capped at 76ch (`Tokens.proseMaxWidth`). No all-caps labels, no tracked-out eyebrows.
+Prose is capped at 76ch (`Theme.proseMaxWidth`). No all-caps labels, no tracked-out eyebrows.
+
+Ligatures are off everywhere (`liga`, and `calt` for code): Barlow joins `--` into a dash and
+JetBrains Mono joins `===`, both of which misrepresent flags and code. Body line height applies only
+to text that wraps; single-line labels use 1.0 so they stay optically centred in chips and rows.
 
 ### Space, size, radius
 * Spacing on a 4px base: `s1`=4, `s2`=8, `s3`=12, `s4`=16, `s5`=24, `s6`=32, `s7`=48, `s8`=64.
@@ -151,21 +155,26 @@ It appears at three sizes: 20px in the titlebar (always visible), 12px in worksp
 conversation in the mode hue, using the same intensity curve. With *Reduce effects* the shader is
 swapped for a static SVG ring tinted by state.
 
-## Component inventory (`qml/Gomp/Controls`)
+## Component inventory (`qml/Controls`, all built on QtQuick.Templates)
 Button (primary, secondary, ghost, danger; sm/md/lg; loading), IconButton, Toggle, Checkbox,
 Slider, SegmentedControl, TextField, SearchField, TextArea, Dropdown (popover list with search when
 > 8 items), ListRow, Card, Tabs, Tooltip, Popover, Badge, StatusLight, Kbd, Meter, Skeleton,
 EmptyState, ErrorState, Surface (elevation levels), Divider, ScrollBar, FocusRing, Icon.
-Overlay system (`qml/Gomp/Overlay`): ModalHost (stack, focus trap, Esc closes top), Sheet,
-ConfirmDialog, ToastHost (max 3, 4s, pause on hover), CommandPalette.
+Overlays: `GSheet` (modal: focus trapped by the modal popup, Esc closes, scrim, scrolling body),
+`GPopover`, `GMenu`, `GToolTip`, all on `GFloating` (frosted backdrop sample + analytic shadow);
+`Overlay/ToastHost` (max 3, 4 s, errors 8 s, pause on hover), `Overlay/CommandPalette`,
+`Overlay/ShortcutSheet`, `Overlay/UiRequestHost` (omp's select/confirm/input/editor/ask/open_url).
+Templates popups have no implicit size: every popup control sets `implicitWidth/Height` from its
+content, or it renders at zero height.
 
 Every interactive control has hover, pressed, focus (2px accent ring offset 2px), disabled (40%
 content opacity, no hover) and, where applicable, loading states. Each sets `Accessible.role` and
 `Accessible.name`.
 
 ## Iconography
-One 20px grid SVG set with a 1.5px stroke, round caps and joins (`resources/icons`), tinted via
-`MultiEffect.colorization`. No emoji, no mixed packs. The gomp mark is a ring broken at the
+One 20px grid SVG set with a 1.5px stroke, round caps and joins (`resources/icons`, 85 icons),
+recoloured by an image provider (`image://icons/<name>/<color>`) that rasterises at device pixel
+ratio, so there is no per-icon shader. No emoji, no mixed packs. The gomp mark is a ring broken at the
 upper-right (the Corona at rest) with a short tangent stroke, like a "g" that is also an orbit.
 
 ## Screen inventory
@@ -187,3 +196,9 @@ upper-right (the Corona at rest) with a short tangent stroke, like a "g" that is
 Sentence case. Buttons say what happens ("Approve and run", "Move key to keyring"). Errors say what
 broke and how to fix it ("omp exited with code 1. Restart the workspace, or open the log."). No
 exclamation marks, no "Oops".
+
+## Visual review
+
+`tools/shots.sh [filter]` renders every screen and state (dark, light, 2560x720, 980x760,
+reduced effects) into `screenshots/` on a private virtual KWin, using the mock backend. Review the
+images against this document before calling a screen done.
