@@ -14,11 +14,11 @@ Item {
 
     ListView {
         id: list
-        anchors.fill: parent
+        // The list is the reading column itself, centred; the scrollbar and wheel cover the full width.
+        width: root.columnWidth
+        height: parent.height
+        anchors.horizontalCenter: parent.horizontalCenter
         clip: true
-        // Side margins centre the reading column; delegates are laid out at x = 0 of the content.
-        leftMargin: Math.max(0, (width - root.columnWidth) / 2)
-        rightMargin: leftMargin
         model: root.workspace ? root.workspace.conversation : null
         spacing: Theme.compact ? Theme.s3 : Theme.s4
         topMargin: Theme.s5
@@ -27,7 +27,7 @@ Item {
         cacheBuffer: 1200
         boundsBehavior: Flickable.StopAtBounds
         maximumFlickVelocity: 4000
-        T.ScrollBar.vertical: GScrollBar {}
+        T.ScrollBar.vertical: vbar
 
         property bool follow: true
         onMovementStarted: follow = false
@@ -66,6 +66,24 @@ Item {
                 workspace: root.workspace
                 visible: parent.height > 0
             }
+        }
+    }
+
+    GScrollBar {
+        id: vbar
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+    }
+    // Scrolling over the margins beside the column moves the transcript too.
+    WheelHandler {
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+        onWheel: event => {
+            list.follow = false
+            list.contentY = Math.max(list.originY - list.topMargin,
+                                     Math.min(list.contentY - event.angleDelta.y,
+                                              list.originY + list.contentHeight + list.bottomMargin - list.height))
+            if (list.atYEnd) list.follow = true
         }
     }
 

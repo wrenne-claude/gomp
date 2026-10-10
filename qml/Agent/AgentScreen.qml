@@ -11,6 +11,7 @@ Item {
     readonly property Workspace ws: App.workspaces.current
     readonly property bool wide: width >= 1100
     readonly property bool inspectorDocked: wide && Ui.inspectorOpen
+    readonly property bool drawerOpen: !wide && Ui.inspectorOpen && ws !== null
     readonly property int inspectorWidth: width >= 1900 ? 440 : 360
 
     EmptyAgent {
@@ -58,10 +59,19 @@ Item {
         }
     }
 
-    // Narrow windows: the inspector slides over the conversation as a frosted drawer.
+    // Narrow windows: the inspector slides over the conversation as a frosted drawer, with a
+    // scrim that dims what it covers; clicking the scrim closes it.
+    Rectangle {
+        anchors.fill: parent
+        color: Theme.scrim
+        opacity: screen.drawerOpen ? 1 : 0
+        visible: opacity > 0
+        Behavior on opacity { NumberAnimation { duration: Theme.dBase } }
+        TapHandler { onTapped: Ui.inspectorOpen = false }
+    }
     Inspector {
         id: drawer
-        visible: !screen.wide && Ui.inspectorOpen && screen.ws !== null
+        visible: screen.drawerOpen
         workspace: screen.ws
         docked: false
         width: Math.min(360, screen.width - Theme.s6)

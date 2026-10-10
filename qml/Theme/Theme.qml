@@ -61,11 +61,15 @@ QtObject {
     readonly property color diffAddText: dark ? "#9FE5C0" : "#145C3A"
     readonly property color diffRemoveText: dark ? "#FFB0B0" : "#8E1F1F"
 
+    // Inputs may be colours or colour strings ("#05070A"); normalise before reading channels.
     function alpha(c, a) {
-        return Qt.rgba(c.r, c.g, c.b, a)
+        const k = Qt.color(c)
+        return Qt.rgba(k.r, k.g, k.b, a)
     }
     function mix(a, b, t) {
-        return Qt.rgba(a.r + (b.r - a.r) * t, a.g + (b.g - a.g) * t, a.b + (b.b - a.b) * t, a.a + (b.a - a.a) * t)
+        const x = Qt.color(a)
+        const y = Qt.color(b)
+        return Qt.rgba(x.r + (y.r - x.r) * t, x.g + (y.g - x.g) * t, x.b + (y.b - x.b) * t, x.a + (y.a - x.a) * t)
     }
     function accentNamed(name) {
         switch (name) {
