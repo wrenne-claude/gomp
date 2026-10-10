@@ -1,0 +1,21 @@
+{
+ "ops": [
+  {
+   "op": "think",
+   "text": "Let me check the migration status before answering."
+  },
+  {
+   "op": "notice",
+   "level": "warning",
+   "text": "Provider returned 529 overloaded. Retrying in 4 s (attempt 1 of 3)."
+  },
+  {
+   "op": "wait",
+   "ms": 900
+  },
+  {
+   "op": "error",
+   "text": "anthropic: 429 rate_limit_error. Your organization exceeded its output token rate limit. Retry after 20 s or switch models."
+  }
+ ]
+}

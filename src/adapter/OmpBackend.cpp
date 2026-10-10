@@ -1,0 +1,162 @@
+#include "OmpBackend.h"
+
+#include <QLoggingCategory>
+
+Q_LOGGING_CATEGORY(lcOmp, "gomp.backend")
+
+using namespace Qt::StringLiterals;
+
+namespace gomp {
+
+OmpBackend::OmpBackend(QObject *parent)
+    : AgentBackend(parent)
+{
+    connect(&m_rpc, &AgentBackend::agentEvent, this, [this](const AgentEvent &ev) { forward(Transport::Rpc, ev); });
+    connect(&m_acp, &AgentBackend::agentEvent, this, [this](const AgentEvent &ev) { forward(Transport::Acp, ev); });
+}
+
+AgentBackend *OmpBackend::active() const
+{
+    return m_active == Transport::Rpc ? static_cast<AgentBackend *>(const_cast<RpcBackend *>(&m_rpc))
+                                      : static_cast<AgentBackend *>(const_cast<AcpBackend *>(&m_acp));
+}
+
+void OmpBackend::start(const LaunchOptions &options)
+{
+    m_options = options;
+    m_switching = false;
+    m_returnAfterTurn = false;
+    if (options.initialMode == "plan"_L1) {
+        m_active = Transport::Acp;
+        m_acp.start(options);
+    } else {
+        m_active = Transport::Rpc;
+        m_rpc.start(options);
+    }
+}
+
+void OmpBackend::stop()
+{
+    m_switching = false;
+    m_rpc.stop();
+    m_acp.stop();
+}
+
+bool OmpBackend::isRunning() const
+{
+    return active()->isRunning();
+}
+
+void OmpBackend::prompt(const QString &text, const QList<ImageAttachment> &images)
+{
+    active()->prompt(text, images);
+}
+void OmpBackend::steer(const QString &text)
+{
+    active()->steer(text);
+}
+void OmpBackend::followUp(const QString &text)
+{
+    active()->followUp(text);
+}
+void OmpBackend::abort()
+{
+    active()->abort();
+}
+void OmpBackend::answerUi(const QString &requestId, const QJsonObject &response)
+{
+    active()->answerUi(requestId, response);
+}
+void OmpBackend::answerApproval(const QString &requestId, bool approve)
+{
+    active()->answerApproval(requestId, approve);
+}
+void OmpBackend::answerPlan(const QString &requestId, const QString &optionId)
+{
+    active()->answerPlan(requestId, optionId);
+}
+void OmpBackend::call(const QString &command, const QJsonObject &params, Reply reply)
+{
+    active()->call(command, params, std::move(reply));
+}
+
+void OmpBackend::setMode(const QString &mode)
+{
+    if (m_switching)
+        return;
+    if (m_active == Transport::Rpc) {
+        if (mode != "plan"_L1) {
+            m_rpc.setMode(mode);
+            return;
+        }
+        const auto &state = m_rpc.lastState();
+        if (state.isStreaming) {
+            emit agentEvent(NoticeEvent{u"warning"_s, u"Stop the current turn before switching to plan mode."_s, u"gomp"_s});
+            return;
+        }
+        // A session with no messages has no file yet; plan mode then starts a fresh session.
+        switchTo(Transport::Acp, state.messageCount > 0 ? state.sessionId : QString{}, u"plan"_s);
+    } else {
+        m_acp.setMode(mode); // current_mode_update "default" triggers the hand-back
+    }
+}
+
+void OmpBackend::switchTo(Transport target, const QString &sessionId, const QString &mode)
+{
+    qCInfo(lcOmp) << "switching transport to" << (target == Transport::Rpc ? "rpc" : "acp") << "session" << sessionId;
+    m_switching = true;
+    m_returnAfterTurn = false;
+    LaunchOptions next = m_options;
+    next.resumeSession = sessionId;
+    next.continueLatest = false;
+    next.initialMode = mode;
+    auto *outgoing = active();
+    m_active = target;
+    auto startIncoming = [this, next] {
+        active()->start(next);
+    };
+    if (outgoing->isRunning()) {
+        // Wait for the outgoing process to release the session file.
+        auto conn = std::make_shared<QMetaObject::Connection>();
+        *conn = connect(outgoing, &AgentBackend::agentEvent, this, [conn, startIncoming](const AgentEvent &ev) {
+            if (const auto *p = std::get_if<ProcessEvent>(&ev);
+                p && p->kind != ProcessEvent::Kind::Started) {
+                QObject::disconnect(*conn);
+                startIncoming();
+            }
+        });
+        outgoing->stop();
+    } else {
+        startIncoming();
+    }
+}
+
+void OmpBackend::forward(Transport from, const AgentEvent &ev)
+{
+    const bool fromActive = from == m_active;
+    // Lifecycle noise from a transport handoff is internal.
+    if (!fromActive || (m_switching && std::holds_alternative<ProcessEvent>(ev)))
+        return;
+
+    if (std::holds_alternative<ReadyEvent>(ev))
+        m_switching = false;
+    if (const auto *s = std::get_if<StateEvent>(&ev))
+        m_lastSessionId = s->state.sessionId;
+
+    emit agentEvent(ev);
+
+    if (m_active != Transport::Acp)
+        return;
+    if (const auto *mode = std::get_if<ModeChangedEvent>(&ev); mode && mode->mode == "default"_L1) {
+        // Plan approved (or the user left plan mode). Execution continues inside the current ACP
+        // turn; hand back to RPC once it finishes so subagents and the full toolset are visible.
+        if (m_acp.isPrompting())
+            m_returnAfterTurn = true;
+        else
+            switchTo(Transport::Rpc, m_acp.sessionId(), u"default"_s);
+    }
+    if (m_returnAfterTurn && std::holds_alternative<AgentEndEvent>(ev) && !m_acp.isPrompting())
+        switchTo(Transport::Rpc, m_acp.sessionId(), u"default"_s);
+}
+
+} // namespace gomp

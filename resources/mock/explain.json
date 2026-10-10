@@ -1,0 +1,43 @@
+{
+ "ops": [
+  {
+   "op": "think",
+   "text": "The user wants to know how session expiry works. The store lives in src/session/ — I should read the store and the sweeper before answering, and check whether expiry is lazy or scheduled."
+  },
+  {
+   "op": "tool",
+   "name": "grep",
+   "args": {
+    "pattern": "expiresAt",
+    "path": "src/session"
+   },
+   "intent": "Find where expiry is read and written",
+   "output": "src/session/store.ts:42:    const expiresAt = now + this.ttlMs;\nsrc/session/store.ts:61:    if (entry.expiresAt <= now) {\nsrc/session/sweeper.ts:18:  for (const [id, entry] of store.entries()) {\nsrc/session/sweeper.ts:19:    if (entry.expiresAt <= now) store.delete(id);",
+   "ms": 380
+  },
+  {
+   "op": "tool",
+   "name": "read",
+   "args": {
+    "path": "src/session/store.ts",
+    "offset": 30,
+    "limit": 45
+   },
+   "output": "export class SessionStore {\n  private readonly entries = new Map<string, Entry>();\n\n  constructor(private readonly ttlMs: number, private readonly clock: Clock = Date) {}\n\n  touch(id: string, data: SessionData): void {\n    const now = this.clock.now();\n    const expiresAt = now + this.ttlMs;\n    this.entries.set(id, { data, expiresAt });\n  }\n\n  get(id: string): SessionData | undefined {\n    const entry = this.entries.get(id);\n    if (!entry) return undefined;\n    const now = this.clock.now();\n    if (entry.expiresAt <= now) {\n      this.entries.delete(id);\n      return undefined;\n    }\n    return entry.data;\n  }\n}",
+   "ms": 260
+  },
+  {
+   "op": "tool",
+   "name": "read",
+   "args": {
+    "path": "src/session/sweeper.ts"
+   },
+   "output": "export function startSweeper(store: SessionStore, intervalMs = 60_000): () => void {\n  const timer = setInterval(() => sweep(store), intervalMs);\n  timer.unref();\n  return () => clearInterval(timer);\n}",
+   "ms": 220
+  },
+  {
+   "op": "say",
+   "text": "Expiry is handled in two places, and both are needed:\n\n1. **Lazily on read.** `SessionStore.get()` compares `expiresAt` with the injected clock and deletes the entry before returning `undefined`. An expired session can never be served, even if the sweeper is late.\n2. **Periodically by the sweeper.** `startSweeper()` walks the map every 60 s and removes expired entries, so sessions that are never read again do not leak memory.\n\n```ts\nif (entry.expiresAt <= now) {\n  this.entries.delete(id);\n  return undefined;\n}\n```\n\n| Path | Trigger | Purpose |\n|---|---|---|\n| `get()` | every read | correctness |\n| `sweep()` | every 60 s | memory |\n\nOne thing worth changing: `touch()` always extends `expiresAt`, so a client that polls keeps its session alive forever. If you want an absolute lifetime, store `createdAt` and cap the extension."
+  }
+ ]
+}
