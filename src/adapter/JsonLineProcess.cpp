@@ -34,6 +34,9 @@ JsonLineProcess::JsonLineProcess(QObject *parent)
 
 JsonLineProcess::~JsonLineProcess()
 {
+    // Owners are mid-destruction too; finishing the child must not call back into them.
+    disconnect(&m_process, nullptr, this, nullptr);
+    blockSignals(true);
     if (m_process.state() != QProcess::NotRunning) {
         m_stopping = true;
         m_process.closeWriteChannel();
@@ -87,6 +90,12 @@ void JsonLineProcess::send(const QJsonObject &frame)
     QByteArray line = QJsonDocument(frame).toJson(QJsonDocument::Compact);
     line.append('\n');
     m_process.write(line);
+}
+
+void JsonLineProcess::sendRaw(const QByteArray &line)
+{
+    if (m_process.state() == QProcess::Running)
+        m_process.write(line);
 }
 
 void JsonLineProcess::onStdout()

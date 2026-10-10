@@ -43,6 +43,8 @@ private:
     bool m_switching = false;
     bool m_returnAfterTurn = false;
     QString m_lastSessionId;
+    LaunchOptions m_pendingLaunch; // the in-flight handoff, for the resume fallback
+    bool m_retriedWithoutResume = false;
 };
 
 } // namespace gomp

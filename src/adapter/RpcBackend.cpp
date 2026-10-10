@@ -2,6 +2,7 @@
 
 #include <QDateTime>
 #include <QJsonArray>
+#include <QJsonDocument>
 #include <QLoggingCategory>
 
 Q_LOGGING_CATEGORY(lcRpc, "gomp.rpc")
@@ -71,6 +72,8 @@ QStringList RpcBackend::buildArguments(const LaunchOptions &o)
 void RpcBackend::start(const LaunchOptions &options)
 {
     m_ready = false;
+    m_v2 = false;
+    m_chunk = {};
     m_state = {};
     m_process.start(options.ompPath, buildArguments(options), options.cwd, options.env);
     m_timeoutSweep.start();
@@ -100,7 +103,82 @@ void RpcBackend::call(const QString &command, const QJsonObject &params, Reply r
     frame.insert("id"_L1, id);
     m_pending.insert(id, Pending{command, std::move(reply),
                                  QDateTime::currentMSecsSinceEpoch() + timeoutFor(command)});
-    m_process.send(frame);
+    sendFrame(frame);
+}
+
+void RpcBackend::sendFrame(const QJsonObject &frame)
+{
+    const auto bytes = QJsonDocument(frame).toJson(QJsonDocument::Compact);
+    if (!m_v2 || bytes.size() <= MaxFrameBytes) {
+        m_process.sendRaw(bytes + '\n');
+        return;
+    }
+    // v2 splits oversized frames (large image prompts) into base64 chunks of 256 KiB raw bytes.
+    static quint64 seq = 0;
+    const auto chunkId = u"gomp-%1"_s.arg(++seq);
+    const auto count = int((bytes.size() + ChunkBytes - 1) / ChunkBytes);
+    for (int i = 0; i < count; ++i) {
+        const QJsonObject part{{"type"_L1, u"rpc_chunk"_s},
+                               {"chunkId"_L1, chunkId},
+                               {"index"_L1, i},
+                               {"count"_L1, count},
+                               {"byteLength"_L1, double(bytes.size())},
+                               {"data"_L1, QString::fromLatin1(bytes.mid(i * ChunkBytes, ChunkBytes).toBase64())}};
+        m_process.sendRaw(QJsonDocument(part).toJson(QJsonDocument::Compact) + '\n');
+    }
+}
+
+QJsonValue RpcBackend::unwrap(const QString &command, const QJsonValue &data)
+{
+    static const QHash<QString, QString> keys{
+        {u"get_available_commands"_s, u"commands"_s},   {u"get_subagents"_s, u"subagents"_s},
+        {u"cancel_subagent"_s, u"cancelled"_s},         {u"get_available_models"_s, u"models"_s},
+        {u"get_available_thinking_levels"_s, u"levels"_s}, {u"get_login_providers"_s, u"providers"_s},
+        {u"get_logout_accounts"_s, u"accounts"_s},      {u"export_html"_s, u"path"_s},
+        {u"set_slow_mode"_s, u"enabled"_s},             {u"set_ask_dialog"_s, u"enabled"_s},
+        {u"set_todos"_s, u"todoPhases"_s},              {u"set_host_tools"_s, u"toolNames"_s},
+        {u"set_host_uri_schemes"_s, u"schemes"_s},      {u"set_subagent_subscription"_s, u"level"_s},
+        {u"set_event_filter"_s, u"events"_s},           {u"set_cache_warming"_s, u"mode"_s},
+        {u"get_last_assistant_text"_s, u"text"_s},      {u"get_messages"_s, u"messages"_s},
+        {u"get_branch_messages"_s, u"messages"_s},      {u"login"_s, u"providerId"_s},
+        {u"predict_word"_s, u"suffix"_s},               {u"btw"_s, u"record"_s},
+        {u"btw_cancel"_s, u"cancelled"_s},              {u"get_btw_history"_s, u"records"_s},
+        {u"live_start"_s, u"voice"_s},                  {u"live_mute"_s, u"muted"_s},
+    };
+    const auto key = keys.value(command);
+    if (key.isEmpty() || !data.isObject() || !data.toObject().contains(key))
+        return data;
+    return data.toObject().value(key);
+}
+
+bool RpcBackend::reassemble(const QJsonObject &c)
+{
+    const auto id = c.value("chunkId"_L1).toString();
+    const int index = c.value("index"_L1).toInt(-1);
+    const int count = c.value("count"_L1).toInt(0);
+    const auto length = static_cast<qint64>(c.value("byteLength"_L1).toDouble());
+    if (id.isEmpty() || count < 2 || index < 0 || index >= count || length <= 0 || length > MaxReassembledBytes) {
+        m_chunk = {};
+        return false;
+    }
+    if (index == 0)
+        m_chunk = Chunked{id, count, 0, length, {}};
+    if (m_chunk.id != id || m_chunk.next != index || m_chunk.count != count) {
+        m_chunk = {};
+        return false;
+    }
+    m_chunk.data += QByteArray::fromBase64(c.value("data"_L1).toString().toLatin1());
+    m_chunk.next++;
+    if (m_chunk.next < count)
+        return true;
+    const auto data = std::exchange(m_chunk, {}).data;
+    if (data.size() != length)
+        return false;
+    const auto doc = QJsonDocument::fromJson(data);
+    if (!doc.isObject())
+        return false;
+    onFrame(doc.object());
+    return true;
 }
 
 int RpcBackend::timeoutFor(const QString &command)
@@ -159,7 +237,7 @@ void RpcBackend::answerUi(const QString &requestId, const QJsonObject &response)
     QJsonObject frame = response;
     frame.insert("type"_L1, u"extension_ui_response"_s);
     frame.insert("id"_L1, requestId);
-    m_process.send(frame);
+    sendFrame(frame);
 }
 
 void RpcBackend::answerApproval(const QString &requestId, bool approve)
@@ -182,6 +260,12 @@ void RpcBackend::setMode(const QString &mode)
 void RpcBackend::onReady()
 {
     m_ready = true;
+    // v2 lifts the 1 MiB frame limit (long transcripts, big tool outputs, image prompts).
+    if (m_supportsV2) {
+        call(u"negotiate_protocol"_s, {{"protocolVersion"_L1, 2}}, [this](bool ok, const QJsonValue &data, const QString &) {
+            m_v2 = ok && data.toObject().value("protocolVersion"_L1).toInt() == 2;
+        });
+    }
     // Deltas only: gomp accumulates text itself, which keeps long streams O(delta) on the wire.
     call(u"set_event_filter"_s, {{"events"_L1, QJsonValue::Null}, {"messageUpdates"_L1, u"delta"_s}});
     call(u"set_subagent_subscription"_s, {{"level"_L1, u"events"_s}});
@@ -209,6 +293,16 @@ void RpcBackend::refreshState()
 
 void RpcBackend::onFrame(const QJsonObject &frame)
 {
+    if (frame.value("type"_L1).toString() == "rpc_chunk"_L1) {
+        if (!reassemble(frame))
+            qCWarning(lcRpc) << "dropped a malformed chunked frame";
+        return;
+    }
+    if (frame.value("type"_L1).toString() == "ready"_L1) {
+        m_supportsV2 = false;
+        for (const auto &v : frame.value("supportedProtocolVersions"_L1).toArray())
+            m_supportsV2 = m_supportsV2 || v.toInt() == 2;
+    }
     auto parsed = rpc::parseFrame(frame);
     if (parsed.response) {
         const auto &r = *parsed.response;
@@ -223,7 +317,7 @@ void RpcBackend::onFrame(const QJsonObject &frame)
         if (!r.success)
             qCInfo(lcRpc) << pending.command << "failed:" << r.error;
         if (pending.reply)
-            pending.reply(r.success, r.data, r.error);
+            pending.reply(r.success, unwrap(pending.command, r.data), r.error);
         return;
     }
     if (parsed.unknown)

@@ -1,0 +1,29 @@
+# gomp C++ style: Qt-flavoured, 120 columns.
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 120
+AccessModifierOffset: -4
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterFunction: true
+  AfterNamespace: false
+  AfterStruct: false
+  AfterEnum: false
+  SplitEmptyFunction: false
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: All
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerIndentWidth: 4
+PointerAlignment: Right
+SpaceAfterTemplateKeyword: false
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^"'
+    Priority: 1
+  - Regex: '^<Q'
+    Priority: 2
+  - Regex: '^<'
+    Priority: 3

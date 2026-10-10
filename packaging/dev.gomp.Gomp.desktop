@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=gomp
+GenericName=Coding agent
+Comment=A native flight deck for the omp coding agent
+Exec=gomp %U
+Icon=dev.gomp.Gomp
+Terminal=false
+Categories=Development;IDE;Qt;
+Keywords=omp;agent;ai;coding;llm;
+StartupWMClass=gomp
+SingleMainWindow=false

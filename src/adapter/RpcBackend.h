@@ -37,6 +37,13 @@ public:
 
     // Builds the omp argument list; public for tests.
     static QStringList buildArguments(const LaunchOptions &options);
+    // Replies wrap single values ({commands: [...]}); this applies the same per-command unwrap
+    // omp's generated SDKs use, so callers get the value itself. Public for tests.
+    static QJsonValue unwrap(const QString &command, const QJsonValue &data);
+    // Protocol v2 transport limits (from omp's rpc wire code).
+    static constexpr qsizetype MaxFrameBytes = 1024 * 1024;
+    static constexpr qsizetype ChunkBytes = 256 * 1024;
+    static constexpr qsizetype MaxReassembledBytes = 64LL * 1024 * 1024;
 
 private:
     struct Pending {
@@ -52,6 +59,16 @@ private:
     void failAllPending(const QString &reason);
     static QJsonArray encodeImages(const QList<ImageAttachment> &images);
     static int timeoutFor(const QString &command);
+    void sendFrame(const QJsonObject &frame);
+    bool reassemble(const QJsonObject &chunk); // false: protocol violation, chunk state reset
+
+    struct Chunked {
+        QString id;
+        int count = 0;
+        int next = 0;
+        qint64 byteLength = 0;
+        QByteArray data;
+    };
 
     JsonLineProcess m_process;
     QHash<QString, Pending> m_pending;
@@ -59,6 +76,9 @@ private:
     QTimer m_stateDebounce;
     quint64 m_nextId = 1;
     bool m_ready = false;
+    bool m_v2 = false;
+    bool m_supportsV2 = false;
+    Chunked m_chunk;
     SessionSnapshot m_state;
 };
 

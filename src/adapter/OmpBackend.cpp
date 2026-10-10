@@ -112,6 +112,8 @@ void OmpBackend::switchTo(Transport target, const QString &sessionId, const QStr
     next.initialMode = mode;
     auto *outgoing = active();
     m_active = target;
+    m_pendingLaunch = next;
+    m_retriedWithoutResume = false;
     auto startIncoming = [this, next] {
         active()->start(next);
     };
@@ -134,6 +136,18 @@ void OmpBackend::switchTo(Transport target, const QString &sessionId, const QStr
 void OmpBackend::forward(Transport from, const AgentEvent &ev)
 {
     const bool fromActive = from == m_active;
+    // A handoff whose resume dies before `ready` (the session was never written, e.g. it had no
+    // messages) falls back to a fresh session rather than leaving the workspace disconnected.
+    if (fromActive && m_switching && !m_retriedWithoutResume && !m_pendingLaunch.resumeSession.isEmpty()) {
+        if (const auto *p = std::get_if<ProcessEvent>(&ev); p && p->kind != ProcessEvent::Kind::Started) {
+            m_retriedWithoutResume = true;
+            auto fresh = m_pendingLaunch;
+            fresh.resumeSession.clear();
+            emit agentEvent(NoticeEvent{u"warning"_s, u"The session could not be reopened after the mode switch; continuing in a new session."_s, u"gomp"_s});
+            active()->start(fresh);
+            return;
+        }
+    }
     // Lifecycle noise from a transport handoff is internal.
     if (!fromActive || (m_switching && std::holds_alternative<ProcessEvent>(ev)))
         return;

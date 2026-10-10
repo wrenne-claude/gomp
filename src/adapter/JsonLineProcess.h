@@ -23,6 +23,7 @@ public:
     void stop(int graceMs = 1500);
     [[nodiscard]] bool isRunning() const;
     void send(const QJsonObject &frame);
+    void sendRaw(const QByteArray &line); // one already-encoded JSON line, newline included
 
     [[nodiscard]] QStringList stderrTail() const { return m_stderr; }
     [[nodiscard]] qint64 pid() const { return m_process.processId(); }

@@ -1,1 +1,18 @@
-# Populated below.
+# Unit tests (Qt Test). Each file is one executable registered with CTest.
+function(gomp_test name)
+    qt_add_executable(${name} ${name}.cpp)
+    target_link_libraries(${name} PRIVATE gomp_core Qt6::Test gomp_warnings)
+    target_include_directories(${name} PRIVATE ${PROJECT_SOURCE_DIR}/src)
+    add_test(NAME ${name} COMMAND ${name})
+    set_tests_properties(${name} PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+endfunction()
+
+gomp_test(tst_rpcparser)
+gomp_test(tst_acpparser)
+gomp_test(tst_yamllite)
+gomp_test(tst_configstore)
+gomp_test(tst_util)
+gomp_test(tst_sessions)
+gomp_test(tst_models)
+gomp_test(tst_mockbackend)
+gomp_test(tst_realomp)

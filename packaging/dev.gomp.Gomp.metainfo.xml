@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>dev.gomp.Gomp</id>
+  <name>gomp</name>
+  <summary>A native flight deck for the omp coding agent</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <!-- Set project_license once the project has chosen one. -->
+  <project_license>LicenseRef-unspecified</project_license>
+  <description>
+    <p>gomp runs the omp coding agent and shows what it is doing: streaming answers, tool calls with
+    inline diffs and approvals, plan review, subagents, sessions with their branches, and every omp
+    setting with a diff preview before anything is written.</p>
+  </description>
+  <launchable type="desktop-id">dev.gomp.Gomp.desktop</launchable>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="0.1.0" date="2026-10-10"/>
+  </releases>
+</component>

@@ -1,0 +1,30 @@
+# Flatpak manifest. omp lives outside the sandbox: on first run, point gomp at a wrapper script
+# in your home directory containing `exec flatpak-spawn --host omp "$@"`.
+# Build: flatpak-builder --user --install build-flatpak packaging/dev.gomp.Gomp.yml
+app-id: dev.gomp.Gomp
+runtime: org.kde.Platform
+runtime-version: '6.10'
+sdk: org.kde.Sdk
+command: gomp
+finish-args:
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # Projects and omp's own state live in the home directory.
+  - --filesystem=home
+  # Desktop notifications and the Secret Service keyring.
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.freedesktop.secrets
+  # Run the host's omp and secret-tool.
+  - --talk-name=org.freedesktop.Flatpak
+modules:
+  - name: gomp
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DGOMP_BUILD_TESTS=OFF
+      - -DGOMP_WERROR=OFF
+    sources:
+      - type: dir
+        path: ..
