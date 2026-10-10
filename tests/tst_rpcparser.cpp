@@ -1,3 +1,4 @@
+#include "adapter/JsonLineProcess.h"
 #include "adapter/RpcBackend.h"
 #include "adapter/RpcParser.h"
 
@@ -27,6 +28,21 @@ class TestRpcParser : public QObject
 {
     Q_OBJECT
 private slots:
+    void summarizesCrashLog()
+    {
+        // The shape omp prints when a resumed session's model cannot be restored.
+        const QStringList bunCrash{
+            u"Fatal error | Could not restore model example/flash-model"_s,
+            u"error: Could not restore model example/flash-model"_s,
+            u"      at cg (/$bunfs/root/omp-linux-x64:631770:19)"_s,
+            u"      at async cg (/$bunfs/root/omp-linux-x64:631770:19)"_s,
+        };
+        QCOMPARE(JsonLineProcess::summarizeError(bunCrash), u"Could not restore model example/flash-model"_s);
+        const QStringList noErrorLine{u"something went wrong"_s, u"631770 | throw x"_s, u"   ^"_s, u"  at f (x:1:1)"_s};
+        QCOMPARE(JsonLineProcess::summarizeError(noErrorLine), u"something went wrong"_s);
+        QCOMPARE(JsonLineProcess::summarizeError({}), QString{});
+    }
+
     void ready()
     {
         const auto f = rpc::parseFrame(json(R"({"type":"ready","protocolVersion":1,"supportedProtocolVersions":[1,2]})"));

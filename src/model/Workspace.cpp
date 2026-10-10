@@ -6,6 +6,7 @@
 #include <QJsonArray>
 #include <QLoggingCategory>
 #include <QMimeDatabase>
+#include <QRegularExpression>
 
 Q_LOGGING_CATEGORY(lcWorkspace, "gomp.workspace")
 
@@ -168,12 +169,18 @@ void Workspace::onEvent(const AgentEvent &event)
             m_busy = false;
             setConnection(Connection::Disconnected, u"omp exited."_s);
             break;
-        case ProcessEvent::Kind::Crashed:
+        case ProcessEvent::Kind::Crashed: {
             m_busy = false;
-            setConnection(Connection::Failed, e->message.isEmpty() ? u"omp exited with code %1."_s.arg(e->exitCode)
-                                                                   : e->message);
+            static const QRegularExpression restore(uR"(Could not restore model (\S+))"_s);
+            const auto m = restore.match(e->message);
+            setConnection(Connection::Failed,
+                          m.hasMatch() ? u"omp could not load %1, the model this session last used. Check that provider in "
+                                         "Settings, then restart omp."_s.arg(m.captured(1))
+                          : e->message.isEmpty() ? u"omp exited with code %1."_s.arg(e->exitCode)
+                                                 : u"omp stopped: %1"_s.arg(e->message));
             emit attention(u"error"_s, name(), u"omp stopped unexpectedly. Restart the workspace to continue."_s);
             break;
+        }
         case ProcessEvent::Kind::FailedToStart:
             m_busy = false;
             setConnection(Connection::Failed, u"Could not start omp: %1"_s.arg(e->message));

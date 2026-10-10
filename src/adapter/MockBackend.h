@@ -22,6 +22,7 @@ public:
 
     void start(const LaunchOptions &options) override;
     void stop() override;
+    [[nodiscard]] QStringList diagnostics() const override { return m_stderr; }
     [[nodiscard]] bool isRunning() const override { return m_running; }
     [[nodiscard]] QString transportName() const override { return QStringLiteral("mock"); }
 
@@ -67,6 +68,7 @@ private:
     std::deque<Step> m_queue;
     QTimer m_timer;
     bool m_running = false;
+    QStringList m_stderr;
     bool m_paused = false;
     bool m_streaming = false;
     double m_timeScale = 1.0;

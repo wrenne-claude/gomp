@@ -3,7 +3,10 @@
 #include <QJsonDocument>
 #include <QJsonParseError>
 #include <QLoggingCategory>
+#include <QRegularExpression>
 #include <QTimer>
+
+using namespace Qt::StringLiterals;
 
 Q_LOGGING_CATEGORY(lcProcess, "gomp.process")
 
@@ -90,6 +93,22 @@ void JsonLineProcess::send(const QJsonObject &frame)
     QByteArray line = QJsonDocument(frame).toJson(QJsonDocument::Compact);
     line.append('\n');
     m_process.write(line);
+}
+
+QString JsonLineProcess::summarizeError(const QStringList &lines)
+{
+    static const QRegularExpression errorLine(uR"(^\s*(?:error|Error|fatal|Fatal error):\s*(.+)$)"_s);
+    for (auto it = lines.crbegin(); it != lines.crend(); ++it) {
+        if (const auto m = errorLine.match(*it); m.hasMatch())
+            return m.captured(1).trimmed();
+    }
+    // Otherwise the last line that is not a stack frame, a source excerpt or a caret marker.
+    static const QRegularExpression noise(uR"(^\s*(?:at\s|\d+\s*\||\^|$))"_s);
+    for (auto it = lines.crbegin(); it != lines.crend(); ++it) {
+        if (!noise.match(*it).hasMatch())
+            return it->trimmed();
+    }
+    return {};
 }
 
 void JsonLineProcess::sendRaw(const QByteArray &line)

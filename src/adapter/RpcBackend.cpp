@@ -34,8 +34,7 @@ RpcBackend::RpcBackend(QObject *parent)
         m_ready = false;
         failAllPending(u"omp exited"_s);
         const auto kind = crashed || code != 0 ? ProcessEvent::Kind::Crashed : ProcessEvent::Kind::Exited;
-        const auto tail = m_process.stderrTail();
-        emit agentEvent(ProcessEvent{kind, code, tail.isEmpty() ? QString{} : tail.constLast()});
+        emit agentEvent(ProcessEvent{kind, code, JsonLineProcess::summarizeError(m_process.stderrTail())});
     });
 
     m_timeoutSweep.setInterval(SweepIntervalMs);

@@ -45,6 +45,11 @@ private:
     QString m_lastSessionId;
     LaunchOptions m_pendingLaunch; // the in-flight handoff, for the resume fallback
     bool m_retriedWithoutResume = false;
+    bool m_readySinceStart = false;
+    bool m_retriedWithModel = false;
+    LaunchOptions m_lastLaunch; // what the active transport was started with
+    bool retryWithSessionModel(const ProcessEvent &p);
+    void launch(const LaunchOptions &o);
 };
 
 } // namespace gomp

@@ -45,7 +45,7 @@ AcpBackend::AcpBackend(QObject *parent)
                 reply({}, QJsonObject{{"message"_L1, u"omp exited"_s}});
         }
         emit agentEvent(ProcessEvent{crashed || code != 0 ? ProcessEvent::Kind::Crashed : ProcessEvent::Kind::Exited,
-                                code, {}});
+                                code, JsonLineProcess::summarizeError(m_process.stderrTail())});
     });
 }
 

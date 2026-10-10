@@ -1,0 +1,22 @@
+{
+ "title": "Crash",
+ "ops": [
+  {
+   "op": "think",
+   "text": "Loading the session model.",
+   "delay": 200
+  },
+  {
+   "op": "crash",
+   "delay": 400,
+   "stderr": [
+    "632508 |     }",
+    "632509 |       throw new Error(`Could not restore model ${ht[0]}`);",
+    "                     ^",
+    "error: Could not restore model example/flash-model",
+    "      at lUu (/$bunfs/root/omp-linux-x64:632509:13)",
+    "      at async cg (/$bunfs/root/omp-linux-x64:631770:19)"
+   ]
+  }
+ ]
+}

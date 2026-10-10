@@ -17,6 +17,7 @@ Item {
             if (name === "compact" && router.workspace) compactSheet.open()
             else if (name === "goal" && router.workspace) goalSheet.open()
             else if (name === "diagnostics" && router.workspace) diagnostics.open()
+            else if (name === "closeDiagnostics") diagnostics.close()
             else if (name === "openProject") folderDialog.open()
         }
     }
@@ -139,15 +140,24 @@ Item {
         subtitle: qsTr("The last lines omp wrote to stderr for this workspace.")
         iconName: "terminal"
         preferredWidth: 760
+        // Read when opened: the log is a snapshot, not a binding (it changes without a signal).
+        property string log: ""
+        onOpened: log = router.workspace ? router.workspace.diagnostics().join("\n") : ""
+        GText {
+            visible: diagnostics.log.length === 0
+            text: qsTr("omp wrote nothing to stderr. omp's own logs are in ~/.omp/logs.")
+            tone: "secondary"
+        }
         CodeBlock {
             Layout.fillWidth: true
-            code: router.workspace ? router.workspace.diagnostics().join("\n") || qsTr("(empty)") : ""
+            visible: diagnostics.log.length > 0
+            code: diagnostics.log
             language: "console"
             maxHeight: 420
         }
         footer: [
             Item { Layout.fillWidth: true },
-            GButton { text: qsTr("Copy"); iconName: "copy"; variant: "ghost"; onClicked: App.copyText(router.workspace.diagnostics().join("\n")) },
+            GButton { text: qsTr("Copy"); iconName: "copy"; variant: "ghost"; onClicked: App.copyText(diagnostics.log) },
             GButton { text: qsTr("Close"); variant: "primary"; onClicked: diagnostics.close() }
         ]
     }

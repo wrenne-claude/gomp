@@ -10,7 +10,7 @@ Rectangle {
     property Workspace workspace: null
     readonly property bool problem: workspace && (workspace.connection === Workspace.Failed || workspace.connection === Workspace.Disconnected)
     visible: problem || (workspace && workspace.modeSwitching)
-    implicitHeight: visible ? 44 : 0
+    implicitHeight: visible ? Math.max(44, message.implicitHeight + Theme.s2 * 2) : 0
     color: problem ? Theme.alpha(Theme.danger, 0.10) : Theme.alpha(Theme.blueprint, 0.10)
     Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Theme.hairline }
 
@@ -21,7 +21,10 @@ Rectangle {
         spacing: Theme.s3
         GIcon { name: banner.problem ? "alert" : "plan"; color: banner.problem ? Theme.danger : Theme.blueprint }
         GText {
+            id: message
             Layout.fillWidth: true
+            wrapMode: Text.Wrap
+            maximumLineCount: 3
             text: !banner.workspace ? "" : banner.problem ? banner.workspace.connectionMessage
                   : banner.workspace.mode === "plan" ? qsTr("Returning to build mode. The session continues where it left off.")
                   : qsTr("Opening this session in plan mode. omp switches to its planning transport.")

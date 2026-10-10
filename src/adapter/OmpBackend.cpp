@@ -1,6 +1,7 @@
 #include "OmpBackend.h"
 
 #include <QLoggingCategory>
+#include <QRegularExpression>
 
 Q_LOGGING_CATEGORY(lcOmp, "gomp.backend")
 
@@ -26,13 +27,34 @@ void OmpBackend::start(const LaunchOptions &options)
     m_options = options;
     m_switching = false;
     m_returnAfterTurn = false;
-    if (options.initialMode == "plan"_L1) {
-        m_active = Transport::Acp;
-        m_acp.start(options);
-    } else {
-        m_active = Transport::Rpc;
-        m_rpc.start(options);
-    }
+    m_retriedWithModel = false;
+    m_active = options.initialMode == "plan"_L1 ? Transport::Acp : Transport::Rpc;
+    launch(options);
+}
+
+void OmpBackend::launch(const LaunchOptions &o)
+{
+    m_lastLaunch = o;
+    m_readySinceStart = false;
+    active()->start(o);
+}
+
+// omp's RPC startup cannot restore a session's model when the model comes from a discovery-backed
+// provider (one whose models are listed by the endpoint), and exits with "Could not restore model
+// <provider/id>". Naming the model explicitly works, so retry once with --model.
+bool OmpBackend::retryWithSessionModel(const ProcessEvent &p)
+{
+    static const QRegularExpression restore(uR"(Could not restore model (\S+))"_s);
+    const auto m = restore.match(p.message);
+    if (!m.hasMatch() || m_readySinceStart || m_retriedWithModel || !m_lastLaunch.model.isEmpty()
+        || m_lastLaunch.resumeSession.isEmpty())
+        return false;
+    m_retriedWithModel = true;
+    auto retry = m_lastLaunch;
+    retry.model = m.captured(1);
+    qCInfo(lcOmp) << "retrying resume with an explicit model" << retry.model;
+    launch(retry);
+    return true;
 }
 
 void OmpBackend::stop()
@@ -115,7 +137,7 @@ void OmpBackend::switchTo(Transport target, const QString &sessionId, const QStr
     m_pendingLaunch = next;
     m_retriedWithoutResume = false;
     auto startIncoming = [this, next] {
-        active()->start(next);
+        launch(next);
     };
     if (outgoing->isRunning()) {
         // Wait for the outgoing process to release the session file.
@@ -138,13 +160,16 @@ void OmpBackend::forward(Transport from, const AgentEvent &ev)
     const bool fromActive = from == m_active;
     // A handoff whose resume dies before `ready` (the session was never written, e.g. it had no
     // messages) falls back to a fresh session rather than leaving the workspace disconnected.
+    if (const auto *p = std::get_if<ProcessEvent>(&ev);
+        fromActive && p && p->kind != ProcessEvent::Kind::Started && retryWithSessionModel(*p))
+        return;
     if (fromActive && m_switching && !m_retriedWithoutResume && !m_pendingLaunch.resumeSession.isEmpty()) {
         if (const auto *p = std::get_if<ProcessEvent>(&ev); p && p->kind != ProcessEvent::Kind::Started) {
             m_retriedWithoutResume = true;
             auto fresh = m_pendingLaunch;
             fresh.resumeSession.clear();
             emit agentEvent(NoticeEvent{u"warning"_s, u"The session could not be reopened after the mode switch; continuing in a new session."_s, u"gomp"_s});
-            active()->start(fresh);
+            launch(fresh);
             return;
         }
     }
@@ -152,8 +177,10 @@ void OmpBackend::forward(Transport from, const AgentEvent &ev)
     if (!fromActive || (m_switching && std::holds_alternative<ProcessEvent>(ev)))
         return;
 
-    if (std::holds_alternative<ReadyEvent>(ev))
+    if (std::holds_alternative<ReadyEvent>(ev)) {
         m_switching = false;
+        m_readySinceStart = true;
+    }
     if (const auto *s = std::get_if<StateEvent>(&ev))
         m_lastSessionId = s->state.sessionId;
 

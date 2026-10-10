@@ -26,6 +26,9 @@ public:
     void sendRaw(const QByteArray &line); // one already-encoded JSON line, newline included
 
     [[nodiscard]] QStringList stderrTail() const { return m_stderr; }
+    // The line worth showing from a crash log: omp's "error: ..." line rather than the last stack
+    // frame or source excerpt. Public for tests.
+    static QString summarizeError(const QStringList &stderrLines);
     [[nodiscard]] qint64 pid() const { return m_process.processId(); }
 
     static constexpr qsizetype MaxLineBytes = 64 * 1024 * 1024; // matches omp's reassembly limit

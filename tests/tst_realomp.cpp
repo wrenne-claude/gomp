@@ -1,6 +1,7 @@
 #include "adapter/OmpBackend.h"
 #include "adapter/OmpLocator.h"
 
+#include <QFile>
 #include <QJsonArray>
 #include <QSignalSpy>
 #include <QTemporaryDir>
@@ -68,6 +69,29 @@ private slots:
         QTRY_VERIFY_WITH_TIMEOUT(backend.transportName() == "rpc"_L1 && has([](const AgentEvent &e) {
             return std::holds_alternative<ReadyEvent>(e);
         }), 45000);
+        backend.stop();
+    }
+    // GOMP_TEST_RESUME_SESSION=<session.jsonl> whose model omp's RPC startup cannot restore (a
+    // discovery-backed provider). A copy is resumed, so the original file is never touched.
+    void resumeRetriesWithSessionModel()
+    {
+        const auto source = qEnvironmentVariable("GOMP_TEST_RESUME_SESSION");
+        if (source.isEmpty())
+            QSKIP("set GOMP_TEST_RESUME_SESSION to a session that fails to restore its model");
+        QTemporaryDir sessions;
+        const auto copy = sessions.filePath(u"session.jsonl"_s);
+        QVERIFY(QFile::copy(source, copy));
+        OmpBackend backend;
+        QList<AgentEvent> events;
+        connect(&backend, &AgentBackend::agentEvent, this, [&](const AgentEvent &e) { events << e; });
+        LaunchOptions o;
+        o.ompPath = omp;
+        o.cwd = project.path();
+        o.resumeSession = copy;
+        backend.start(o);
+        QTRY_VERIFY_WITH_TIMEOUT(std::any_of(events.cbegin(), events.cend(), [](const AgentEvent &e) {
+            return std::holds_alternative<ReadyEvent>(e);
+        }), 60000);
         backend.stop();
     }
 };

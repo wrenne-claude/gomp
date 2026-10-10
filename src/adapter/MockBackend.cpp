@@ -1,5 +1,6 @@
 #include "MockBackend.h"
 
+#include "JsonLineProcess.h"
 #include "RpcParser.h"
 
 #include <QDateTime>
@@ -227,6 +228,8 @@ QString MockBackend::pickScenario(const QString &prompt) const
         return u"subagents"_s;
     if (p.contains("fix"_L1) || p.contains("edit"_L1) || p.contains("change"_L1))
         return u"edit"_s;
+    if (p.contains("crash"_L1))
+        return u"crash"_s;
     if (p.contains("fail"_L1) || p.contains("error"_L1) || p.contains("deploy"_L1))
         return u"error"_s;
     return u"explain"_s;
@@ -575,6 +578,21 @@ void MockBackend::enqueueOp(const QJsonObject &op)
                        {"message"_L1, QJsonObject{{"role"_L1, u"assistant"_s}, {"stopReason"_L1, u"error"_s},
                                                   {"errorMessage"_L1, text}}}});
             m_messageId.clear();
+        });
+        return;
+    }
+
+    // The process dies the way omp does when it cannot restore a session's model: a source
+    // excerpt and a stack on stderr, then a non-zero exit.
+    if (kind == "crash"_L1) {
+        const auto lines = op.value("stderr"_L1).toVariant().toStringList();
+        enqueue(op.value("delay"_L1).toInt(300), [this, lines] {
+            m_timer.stop();
+            m_queue.clear();
+            m_streaming = false;
+            m_running = false;
+            m_stderr = lines;
+            emit agentEvent(ProcessEvent{ProcessEvent::Kind::Crashed, 1, JsonLineProcess::summarizeError(lines)});
         });
         return;
     }
