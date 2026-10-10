@@ -155,6 +155,10 @@ It appears at three sizes: 20px in the titlebar (always visible), 12px in worksp
 conversation in the mode hue, using the same intensity curve. With *Reduce effects* the shader is
 swapped for a static SVG ring tinted by state.
 
+Under the transcript, the working line says "Working…" with omp's own shimmer (`shimmer.frag`): a
+cosine band of the mode colour sweeps over dim text at 30 characters a second, as omp's terminal
+does. Reduced motion or effects leaves the label static in the mode colour.
+
 ## Component inventory (`qml/Controls`, all built on QtQuick.Templates)
 Button (primary, secondary, ghost, danger; sm/md/lg; loading), IconButton, Toggle, Checkbox,
 Slider, SegmentedControl, TextField, SearchField, TextArea, Dropdown (popover list with search when

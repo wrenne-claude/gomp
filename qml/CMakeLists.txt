@@ -29,7 +29,7 @@ qt_add_resources(gomp "gomp_assets"
     FILES ${GOMP_FONTS} ${GOMP_ICONS}
 )
 
-file(GLOB GOMP_SHADERS ${PROJECT_SOURCE_DIR}/resources/shaders/*.frag ${PROJECT_SOURCE_DIR}/resources/shaders/*.vert)
+file(GLOB GOMP_SHADERS CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/resources/shaders/*.frag ${PROJECT_SOURCE_DIR}/resources/shaders/*.vert)
 if(GOMP_SHADERS)
     qt_add_shaders(gomp "gomp_shaders"
         PREFIX /qt/qml/Gomp

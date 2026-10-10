@@ -14,11 +14,17 @@ Row {
         size: 18
         anchors.verticalCenter: parent.verticalCenter
     }
-    GText {
+    // Like omp's own status line: "Working…" with its shimmer while the agent works; a plain,
+    // static label when it is waiting on you or has failed.
+    readonly property bool working: line.workspace !== null && line.workspace.activity !== Workspace.Approval
+                                    && line.workspace.activity !== Workspace.Error
+    GShimmerText {
         anchors.verticalCenter: parent.verticalCenter
-        text: line.workspace ? Theme.activityLabel(line.workspace.activity) : ""
+        text: line.working ? qsTr("Working…") : line.workspace ? Theme.activityLabel(line.workspace.activity) : ""
         role: "strong"
-        color: line.workspace ? Theme.activityColor(line.workspace.activity, line.workspace.mode) : Theme.textSecondary
+        running: line.working
+        highColor: line.workspace ? Theme.activityColor(line.workspace.activity, line.workspace.mode) : Theme.textSecondary
+        Accessible.name: line.workspace ? Theme.activityLabel(line.workspace.activity) : ""
     }
     GText {
         id: elapsed
@@ -34,6 +40,15 @@ Row {
             triggeredOnStart: true
             onTriggered: elapsed.seconds = line.workspace.turnSeconds
         }
+    }
+    Row {
+        anchors.verticalCenter: parent.verticalCenter
+        readonly property string key: App.shortcuts.map["agent.stop"] || ""
+        visible: line.working && key.length > 0
+        spacing: Theme.s1 + 2
+        leftPadding: Theme.s2
+        GKbd { sequence: parent.key; anchors.verticalCenter: parent.verticalCenter }
+        GText { text: qsTr("stop"); role: "caption"; tone: "tertiary"; anchors.verticalCenter: parent.verticalCenter }
     }
     GText {
         anchors.verticalCenter: parent.verticalCenter

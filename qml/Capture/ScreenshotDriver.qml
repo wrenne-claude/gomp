@@ -19,7 +19,11 @@ Item {
 
     property var steps: [
         { name: "01-agent-empty", until: () => ws && ws.connection === Workspace.Ready, then: 600 },
-        { name: "02-agent-streaming", run: () => send("Explain how session expiry works"), until: () => ws.activity === Workspace.Streaming, then: 900 },
+        { name: "01b-composer-text", run: () => Ui.openOverlay("composerText", { text: "How can I check how much size a folder is taking up on my linux system?" }), then: 400 },
+        { name: "01c-composer-multiline", run: () => Ui.openOverlay("composerText", { text: "First line of a longer prompt\nSecond line, with gjpqy descenders\nThird line" }), then: 400 },
+        { name: "02-agent-streaming", run: () => { Ui.openOverlay("composerText", { text: "" }); send("Explain how session expiry works") }, until: () => ws.activity === Workspace.Streaming, then: 900 },
+        { name: "02b-working-a", then: 130 },
+        { name: "02c-working-b", then: 130 },
         { name: "03-agent-answer", until: () => !ws.busy, then: 500 },
         { name: "04-agent-approval", run: () => send("Fix the failing rate limiter test"), until: () => ws.pendingApprovals > 0, then: 700 },
         { name: "05-agent-edit-done", run: () => ws.approveAll(), until: () => !ws.busy, then: 600 },

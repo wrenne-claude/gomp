@@ -176,6 +176,9 @@ Item {
                     T.TextArea {
                         id: input
                         width: flick.width
+                        // Templates controls have no implicit size; without this the edit stays one
+                        // short line tall, clips descenders and never grows.
+                        implicitHeight: contentHeight + topPadding + bottomPadding
                         wrapMode: TextEdit.Wrap
                         font: Theme.fBody
                         color: Theme.textPrimary
