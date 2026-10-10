@@ -6,6 +6,9 @@ A native Qt 6 / QML desktop app for the [omp](https://github.com/can1357/oh-my-p
 streaming conversation, tool calls with inline diffs and approvals, plan review, subagent lanes,
 a session browser with branch timelines, and every omp setting behind a diff-reviewed editor.
 
+# DISCLAIMER: THIS IS TOTAL AND UTTER VIBE CODED SLOP
+I'm making this project as a proof of concept, with Opus 5.5 and GLM 5.3 Flash being the lead "developers", **not me.**
+
 ## Build
 
 gomp is developed and tested on Linux (Fedora, KDE Plasma on Wayland). macOS and Windows are
