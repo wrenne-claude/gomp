@@ -392,6 +392,34 @@ void ProviderStore::refreshOAuth()
     });
 }
 
+void ProviderStore::loadDemoOAuth()
+{
+    struct Sample {
+        const char *id;
+        const char *name;
+        bool authenticated;
+    };
+    static const Sample samples[] = {
+        {"anthropic", "Anthropic (Claude Pro/Max)", true}, {"openai-codex", "ChatGPT Plus/Pro (Codex Subscription)", false},
+        {"github-copilot", "GitHub Copilot", true},        {"google-gemini-cli", "Google Cloud Code Assist (Gemini CLI)", false},
+        {"openrouter", "OpenRouter", true},                {"cursor", "Cursor (Claude, GPT, etc.)", false},
+        {"xai", "xAI API", false},                         {"deepseek", "DeepSeek", false},
+        {"moonshot", "Moonshot (Kimi API)", false},        {"zai", "Z.AI (GLM Coding Plan)", false},
+        {"mistral", "Mistral", false},                     {"groq", "Groq", false},
+        {"ollama", "Ollama (Local OpenAI-compatible)", false}, {"lm-studio", "LM Studio (Local OpenAI-compatible)", false},
+        {"together", "Together", false},                   {"fireworks", "Fireworks", false},
+        {"perplexity", "Perplexity (Pro/Max)", false},     {"cerebras", "Cerebras", false},
+    };
+    m_oauth.clear();
+    for (const auto &s : samples) {
+        m_oauth << QVariantMap{{u"id"_s, QString::fromLatin1(s.id)},
+                               {u"name"_s, QString::fromLatin1(s.name)},
+                               {u"available"_s, true},
+                               {u"authenticated"_s, s.authenticated}};
+    }
+    emit changed();
+}
+
 void ProviderStore::login(const QString &providerId)
 {
     m_loginProvider = providerId;

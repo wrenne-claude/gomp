@@ -102,6 +102,8 @@ public:
     Q_INVOKABLE void openUrl(const QString &url) const;
     Q_INVOKABLE void revealPath(const QString &path) const;
     Q_INVOKABLE QString toLocalPath(const QString &url) const;
+    // URL of resources/providers/<providerId>.svg (or .png) when the logo exists, else empty.
+    Q_INVOKABLE QString providerLogo(const QString &providerId) const;
     Q_INVOKABLE bool isDirectory(const QString &path) const;
     Q_INVOKABLE QString homePath() const;
     Q_INVOKABLE QString pasteImage() const; // saves a clipboard image to a temp file, returns its path

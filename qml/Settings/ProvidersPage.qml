@@ -13,7 +13,11 @@ Item {
     readonly property string subtitle: qsTr("API keys you enter here go to the system keyring. omp reads them at start; nothing is written to disk in plain text.")
     property string editingEnv: ""
     property bool showAll: false
-    Component.onCompleted: if (!App.mockMode) App.providers.refreshOAuth()
+    Component.onCompleted: {
+        if (App.mockMode) App.providers.loadDemoOAuth()
+        else App.providers.refreshOAuth()
+    }
+    readonly property bool loginIdle: ["idle", "done", "failed"].indexOf(App.providers.loginState) >= 0
 
     Flickable {
         id: flick
@@ -135,20 +139,20 @@ Item {
                 spacing: Theme.s2
                 visible: App.providers.oauthProviders.length > 0
                 GText { text: qsTr("Sign in with an account"); role: "heading" }
-                GText { text: qsTr("Subscriptions such as Claude or ChatGPT log in through your browser. omp stores the tokens."); tone: "tertiary"; role: "caption" }
+                GText { text: qsTr("Subscriptions and hosted APIs. Hover a logo for the name; omp stores the tokens it receives."); tone: "tertiary"; role: "caption" }
+                // Connected accounts first, then omp's own order. Hover a tile for the provider's name.
                 Flow {
                     Layout.fillWidth: true
                     spacing: Theme.s2
                     Repeater {
-                        model: App.providers.oauthProviders
-                        GButton {
+                        model: App.providers.oauthProviders.slice().sort((x, y) => (y.authenticated ? 1 : 0) - (x.authenticated ? 1 : 0))
+                        ProviderTile {
                             id: d142
                             required property var modelData
-                            text: d142.modelData.authenticated ? qsTr("%1 connected").arg(d142.modelData.name) : qsTr("Sign in to %1").arg(d142.modelData.name)
-                            iconName: d142.modelData.authenticated ? "check" : "external"
-                            variant: d142.modelData.authenticated ? "ghost" : "secondary"
-                            enabled: d142.modelData.available && App.providers.loginState === "idle" || App.providers.loginState === "done" || App.providers.loginState === "failed"
-                            loading: App.providers.loginProvider === d142.modelData.id && (App.providers.loginState === "starting" || App.providers.loginState === "browser")
+                            provider: d142.modelData
+                            enabled: d142.modelData.available && page.loginIdle
+                            busy: App.providers.loginProvider === d142.modelData.id
+                                  && (App.providers.loginState === "starting" || App.providers.loginState === "browser")
                             onClicked: App.providers.login(d142.modelData.id)
                         }
                     }

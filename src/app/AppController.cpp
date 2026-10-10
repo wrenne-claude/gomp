@@ -6,6 +6,7 @@
 #include <QClipboard>
 #include <QDesktopServices>
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
 #include <QImage>
@@ -381,6 +382,18 @@ void AppController::revealPath(const QString &path) const
 {
     const QFileInfo fi(toLocalPath(path));
     QDesktopServices::openUrl(QUrl::fromLocalFile(fi.isDir() ? fi.absoluteFilePath() : fi.absolutePath()));
+}
+
+QString AppController::providerLogo(const QString &providerId) const
+{
+    if (providerId.isEmpty() || providerId.contains(u'/') || providerId.contains(u'\\'))
+        return {};
+    for (const auto &ext : {u"svg"_s, u"png"_s}) {
+        const auto path = u"/qt/qml/Gomp/providers/%1.%2"_s.arg(providerId, ext);
+        if (QFile::exists(u":"_s + path))
+            return u"qrc:"_s + path;
+    }
+    return {};
 }
 
 QString AppController::toLocalPath(const QString &url) const

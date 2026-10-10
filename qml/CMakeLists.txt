@@ -24,10 +24,13 @@ qt_add_qml_module(gomp
 file(GLOB GOMP_FONTS ${PROJECT_SOURCE_DIR}/resources/fonts/*.ttf)
 file(GLOB GOMP_ICONS ${PROJECT_SOURCE_DIR}/resources/icons/*.svg)
 file(GLOB GOMP_BRAND ${PROJECT_SOURCE_DIR}/resources/brand/*)
+# Provider logos for the sign-in grid; dropping a file named <provider-id>.svg in is enough.
+file(GLOB GOMP_PROVIDER_LOGOS CONFIGURE_DEPENDS
+     ${PROJECT_SOURCE_DIR}/resources/providers/*.svg ${PROJECT_SOURCE_DIR}/resources/providers/*.png)
 qt_add_resources(gomp "gomp_assets"
     PREFIX /qt/qml/Gomp
     BASE ${PROJECT_SOURCE_DIR}/resources
-    FILES ${GOMP_FONTS} ${GOMP_ICONS} ${GOMP_BRAND}
+    FILES ${GOMP_FONTS} ${GOMP_ICONS} ${GOMP_BRAND} ${GOMP_PROVIDER_LOGOS}
 )
 
 file(GLOB GOMP_SHADERS CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/resources/shaders/*.frag ${PROJECT_SOURCE_DIR}/resources/shaders/*.vert)

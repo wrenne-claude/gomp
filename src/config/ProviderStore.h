@@ -59,6 +59,7 @@ public:
     Q_INVOKABLE void removeCustomProvider(const QString &name);
 
     Q_INVOKABLE void refreshOAuth();
+    Q_INVOKABLE void loadDemoOAuth(); // demo mode: a fixed sample, nothing is contacted
     Q_INVOKABLE void login(const QString &providerId);
     Q_INVOKABLE void answerLogin(const QString &text);
     Q_INVOKABLE void cancelLogin();
