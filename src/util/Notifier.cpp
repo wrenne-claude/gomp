@@ -1,8 +1,10 @@
 #include "Notifier.h"
 
+#ifdef GOMP_HAVE_DBUS
 #include <QDBusConnection>
 #include <QDBusInterface>
 #include <QDBusReply>
+#endif
 #include <QVariantMap>
 
 using namespace Qt::StringLiterals;
@@ -10,19 +12,27 @@ using namespace Qt::StringLiterals;
 namespace gomp {
 
 namespace {
+#ifdef GOMP_HAVE_DBUS
 const auto Service = u"org.freedesktop.Notifications"_s;
 const auto Path = u"/org/freedesktop/Notifications"_s;
+#endif
 } // namespace
 
 Notifier::Notifier(QObject *parent)
     : QObject(parent)
 {
+#ifdef GOMP_HAVE_DBUS
     QDBusConnection::sessionBus().connect(Service, Path, Service, u"ActionInvoked"_s, this,
                                           SLOT(onActionInvoked(uint, QString)));
+#endif
 }
 
 uint Notifier::notify(const QString &title, const QString &body, const QString &key, bool urgent)
 {
+#ifndef GOMP_HAVE_DBUS
+    Q_UNUSED(title) Q_UNUSED(body) Q_UNUSED(key) Q_UNUSED(urgent)
+    return 0; // no desktop notification service on this platform; the in-app toast still shows
+#else
     QDBusInterface iface(Service, Path, Service, QDBusConnection::sessionBus());
     if (!iface.isValid())
         return 0;
@@ -38,13 +48,16 @@ uint Notifier::notify(const QString &title, const QString &body, const QString &
     if (!key.isEmpty())
         m_keys.insert(reply.value(), key);
     return reply.value();
+#endif
 }
 
 void Notifier::close(uint id)
 {
+#ifdef GOMP_HAVE_DBUS
     QDBusInterface iface(Service, Path, Service, QDBusConnection::sessionBus());
     if (iface.isValid())
         iface.call(u"CloseNotification"_s, id);
+#endif
     m_keys.remove(id);
 }
 

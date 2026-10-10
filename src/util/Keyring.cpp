@@ -30,7 +30,13 @@ Keyring::Keyring(QObject *parent)
 
 bool Keyring::available()
 {
+#ifdef Q_OS_LINUX
     return !QStandardPaths::findExecutable(u"secret-tool"_s).isEmpty();
+#else
+    // The keyring path shells out to secret-tool (libsecret), which only exists on Linux. Keys
+    // stay in environment variables on other platforms; gomp never writes one to a file.
+    return false;
+#endif
 }
 
 QString Keyring::lookupCommand(const QString &provider)

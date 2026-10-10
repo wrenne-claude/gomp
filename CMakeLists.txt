@@ -9,17 +9,23 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(GOMP_WERROR "Treat compiler warnings as errors" ON)
 option(GOMP_BUILD_TESTS "Build unit and smoke tests" ON)
 
-find_package(Qt6 6.6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 ShaderTools Svg DBus Concurrent Test)
+find_package(Qt6 6.6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 ShaderTools Svg Concurrent Test
+             OPTIONAL_COMPONENTS DBus)
 qt_standard_project_setup(REQUIRES 6.6)
 qt_policy(SET QTP0004 NEW)
 
 # Project-wide warning policy. Qt headers come in as SYSTEM includes through the imported targets,
 # so -Werror applies only to our code.
 add_library(gomp_warnings INTERFACE)
-target_compile_options(gomp_warnings INTERFACE
-    -Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor -Wcast-align -Woverloaded-virtual
-    -Wimplicit-fallthrough -Wno-gnu-zero-variadic-macro-arguments
-    $<$<BOOL:${GOMP_WERROR}>:-Werror>)
+if(MSVC)
+    target_compile_options(gomp_warnings INTERFACE /W4 /permissive- /Zc:__cplusplus /utf-8
+        $<$<BOOL:${GOMP_WERROR}>:/WX>)
+else()
+    target_compile_options(gomp_warnings INTERFACE
+        -Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor -Wcast-align -Woverloaded-virtual
+        -Wimplicit-fallthrough -Wno-gnu-zero-variadic-macro-arguments
+        $<$<BOOL:${GOMP_WERROR}>:-Werror>)
+endif()
 target_compile_definitions(gomp_warnings INTERFACE
     QT_NO_CAST_FROM_ASCII QT_NO_URL_CAST_FROM_STRING QT_NO_NARROWING_CONVERSIONS_IN_CONNECT)
 

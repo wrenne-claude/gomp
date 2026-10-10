@@ -73,5 +73,12 @@ target_include_directories(gomp_core PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/adapter ${CMAKE_CURRENT_SOURCE_DIR}/util ${CMAKE_CURRENT_SOURCE_DIR}/config
     ${CMAKE_CURRENT_SOURCE_DIR}/model ${CMAKE_CURRENT_SOURCE_DIR}/app)
 target_link_libraries(gomp_core
-    PUBLIC Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::DBus Qt6::Concurrent Qt6::Svg
+    PUBLIC Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::Concurrent Qt6::Svg
     PRIVATE gomp_warnings)
+
+# Desktop notifications use the freedesktop D-Bus service; without Qt DBus (Windows, some macOS
+# kits) gomp falls back to its in-app toasts only.
+if(TARGET Qt6::DBus)
+    target_link_libraries(gomp_core PUBLIC Qt6::DBus)
+    target_compile_definitions(gomp_core PUBLIC GOMP_HAVE_DBUS)
+endif()

@@ -48,6 +48,9 @@ class TestConfigStore : public QObject
 private slots:
     void initTestCase()
     {
+#ifdef Q_OS_WIN
+        QSKIP("the fake omp is a POSIX shell script");
+#endif
         fake = home.filePath(u"omp"_s);
         write(fake, FakeOmp);
         QFile::setPermissions(fake, QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner);

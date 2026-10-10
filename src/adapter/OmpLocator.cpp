@@ -46,8 +46,17 @@ void OmpLocator::locate(const QString &preferred)
     if (!onPath.isEmpty())
         candidates << onPath;
     const auto home = QDir::homePath();
-    for (const auto &p : {home + u"/.local/bin/omp"_s, home + u"/.bun/bin/omp"_s, home + u"/.npm-global/bin/omp"_s,
-                          u"/usr/local/bin/omp"_s, u"/usr/bin/omp"_s}) {
+#ifdef Q_OS_WIN
+    const QStringList usual{home + u"/.bun/bin/omp.exe"_s, home + u"/AppData/Roaming/npm/omp.cmd"_s,
+                            home + u"/.local/bin/omp.exe"_s};
+#elif defined(Q_OS_MACOS)
+    const QStringList usual{home + u"/.local/bin/omp"_s, home + u"/.bun/bin/omp"_s, home + u"/.npm-global/bin/omp"_s,
+                            u"/opt/homebrew/bin/omp"_s, u"/usr/local/bin/omp"_s};
+#else
+    const QStringList usual{home + u"/.local/bin/omp"_s, home + u"/.bun/bin/omp"_s, home + u"/.npm-global/bin/omp"_s,
+                            u"/usr/local/bin/omp"_s, u"/usr/bin/omp"_s};
+#endif
+    for (const auto &p : usual) {
         if (!candidates.contains(p))
             candidates << p;
     }
