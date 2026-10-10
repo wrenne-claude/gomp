@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Window
 import QtQuick.Templates as T
 import Gomp
 import Gomp.Core
@@ -34,8 +35,10 @@ T.AbstractButton {
             width: 30
             height: 30
             visible: tile.logo.length > 0
-            source: tile.logo
-            sourceSize: Qt.size(60, 60)
+            // Single-tone (all black or all white) logos are tinted to the theme's text colour;
+            // coloured logos are drawn as supplied.
+            source: tile.logo.length > 0 ? "image://providerlogo/" + tile.provider.id + "/" + Theme.textPrimary.toString() : ""
+            sourceSize: Qt.size(Math.ceil(30 * Screen.devicePixelRatio), Math.ceil(30 * Screen.devicePixelRatio))
             fillMode: Image.PreserveAspectFit
             smooth: true
             mipmap: true

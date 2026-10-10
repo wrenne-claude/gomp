@@ -28,6 +28,7 @@ qt_add_qml_module(gomp_core
         util/GitInfo.h util/GitInfo.cpp
         util/Format.h util/Format.cpp
         util/IconProvider.h util/IconProvider.cpp
+        util/ProviderLogoProvider.h util/ProviderLogoProvider.cpp
         config/SettingsSchema.h config/SettingsSchema.cpp
         config/ConfigStore.h config/ConfigStore.cpp
         config/McpStore.h config/McpStore.cpp

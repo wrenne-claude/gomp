@@ -7,8 +7,11 @@
 #include "util/Keyring.h"
 #include "util/LineDiff.h"
 #include "util/Markdown.h"
+#include "util/ProviderLogoProvider.h"
 #include "util/SyntaxHighlighter.h"
 
+#include <QImage>
+#include <QPainter>
 #include <QTest>
 
 using namespace gomp;
@@ -18,6 +21,30 @@ class TestUtil : public QObject
 {
     Q_OBJECT
 private slots:
+    void tintsOnlySingleToneLogos()
+    {
+        auto make = [](QColor a, QColor b) {
+            QImage img(20, 20, QImage::Format_ARGB32);
+            img.fill(Qt::transparent);
+            QPainter p(&img);
+            p.fillRect(0, 0, 10, 20, a);
+            p.fillRect(10, 0, 10, 20, b);
+            return img;
+        };
+        QVERIFY(ProviderLogoProvider::isSingleTone(make(Qt::black, Qt::black)));
+        QVERIFY(ProviderLogoProvider::isSingleTone(make(Qt::white, Qt::white)));
+        QVERIFY(ProviderLogoProvider::isSingleTone(make(QColor(20, 20, 20), Qt::transparent))); // one tone + empty
+        QVERIFY(!ProviderLogoProvider::isSingleTone(make(Qt::black, Qt::white)));                 // black and white mixed
+        QVERIFY(!ProviderLogoProvider::isSingleTone(make(QColor(0xD9, 0x77, 0x57), Qt::black)));   // real colour
+        QImage empty(4, 4, QImage::Format_ARGB32);
+        empty.fill(Qt::transparent); // a new QImage is uninitialised memory
+        QVERIFY(!ProviderLogoProvider::isSingleTone(empty));                                        // nothing drawn is not a tone
+
+        auto img = make(Qt::black, Qt::transparent);
+        ProviderLogoProvider::tint(img, QColor(u"#E7ECF3"_s));
+        QCOMPARE(img.pixelColor(2, 2), QColor(0xE7, 0xEC, 0xF3));
+        QCOMPARE(img.pixelColor(15, 2).alpha(), 0); // transparency is preserved
+    }
     void lineDiff()
     {
         const auto lines = diff::compute(u"a\nb\nc\nd"_s, u"a\nB\nc\nd\ne"_s, 1);

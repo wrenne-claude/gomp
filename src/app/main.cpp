@@ -1,6 +1,7 @@
 #include "AppController.h"
 #include "LaunchOptions.h"
 #include "util/IconProvider.h"
+#include "util/ProviderLogoProvider.h"
 
 #include <QCommandLineParser>
 #include <QDirIterator>
@@ -66,6 +67,7 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
     engine.addImageProvider(u"icons"_s, new gomp::IconProvider);
+    engine.addImageProvider(u"providerlogo"_s, new gomp::ProviderLogoProvider);
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed, &app, [] { QCoreApplication::exit(1); },
                      Qt::QueuedConnection);
     engine.loadFromModule(u"Gomp"_s, u"Main"_s);

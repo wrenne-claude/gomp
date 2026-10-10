@@ -145,7 +145,7 @@ Item {
                     Layout.fillWidth: true
                     spacing: Theme.s2
                     Repeater {
-                        model: App.providers.oauthProviders.slice().sort((x, y) => (y.authenticated ? 1 : 0) - (x.authenticated ? 1 : 0))
+                        model: App.providers.oauthProviders.filter(p => p.authenticated).concat(App.providers.oauthProviders.filter(p => !p.authenticated))
                         ProviderTile {
                             id: d142
                             required property var modelData
