@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Gomp
@@ -51,13 +52,13 @@ ColumnLayout {
                 GCard {
                     id: modeCard
                     required property var modelData
-                    readonly property bool chosen: page.mode === modelData.value
+                    readonly property bool chosen: page.mode === modeCard.modelData.value
                     Layout.fillWidth: true
                     implicitHeight: 112
                     interactive: true
                     selected: chosen
                     Accessible.role: Accessible.RadioButton
-                    Accessible.name: modelData.label
+                    Accessible.name: modeCard.modelData.label
                     Accessible.checked: chosen
                     ColumnLayout {
                         anchors.fill: parent
@@ -83,22 +84,23 @@ ColumnLayout {
         Repeater {
             model: page.tools
             RowLayout {
+                id: d85
                 required property var modelData
                 Layout.fillWidth: true
                 Layout.preferredHeight: 44
                 spacing: Theme.s3
-                GText { text: modelData.label; Layout.preferredWidth: 240 }
-                GText { text: modelData.id; font: Theme.fCodeSmall; tone: "tertiary"; Layout.fillWidth: true }
+                GText { text: d85.modelData.label; Layout.preferredWidth: 240 }
+                GText { text: d85.modelData.id; font: Theme.fCodeSmall; tone: "tertiary"; Layout.fillWidth: true }
                 GSegmented {
                     size: "sm"
-                    value: page.policies[modelData.id] || "inherit"
+                    value: page.policies[d85.modelData.id] || "inherit"
                     options: [
                         { value: "inherit", label: qsTr("Default") },
                         { value: "allow", label: qsTr("Allow") },
                         { value: "prompt", label: qsTr("Ask") },
                         { value: "deny", label: qsTr("Block") }
                     ]
-                    onActivated: v => page.setPolicy(modelData.id, v)
+                    onActivated: v => page.setPolicy(d85.modelData.id, v)
                 }
             }
         }

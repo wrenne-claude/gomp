@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Templates as T
@@ -11,6 +12,7 @@ Item {
     readonly property string subtitle: qsTr("How gomp looks and moves. These settings belong to gomp and do not change omp.")
 
     component Row_: RowLayout {
+        id: settingRow
         property string label
         property string help
         default property alias control: slot.data
@@ -19,8 +21,8 @@ Item {
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 2
-            GText { text: parent.parent.label; role: "strong"; Layout.fillWidth: true }
-            GText { text: parent.parent.help; tone: "secondary"; wrapMode: Text.WordWrap; elide: Text.ElideNone; Layout.fillWidth: true; visible: text.length > 0 }
+            GText { text: settingRow.label; role: "strong"; Layout.fillWidth: true }
+            GText { text: settingRow.help; tone: "secondary"; wrapMode: Text.WordWrap; elide: Text.ElideNone; Layout.fillWidth: true; visible: text.length > 0 }
         }
         Row { id: slot; spacing: Theme.s2 }
     }
@@ -62,15 +64,15 @@ Item {
                     T.AbstractButton {
                         id: swatch
                         required property var modelData
-                        readonly property bool chosen: App.prefs.accent === modelData.value
+                        readonly property bool chosen: App.prefs.accent === swatch.modelData.value
                         width: 32
                         height: 32
                         hoverEnabled: true
                         focusPolicy: Qt.StrongFocus
-                        Accessible.name: modelData.label
+                        Accessible.name: swatch.modelData.label
                         Accessible.role: Accessible.RadioButton
                         Accessible.checked: chosen
-                        onClicked: App.prefs.accent = modelData.value
+                        onClicked: App.prefs.accent = swatch.modelData.value
                         background: Rectangle {
                             radius: 16
                             color: swatch.modelData.color

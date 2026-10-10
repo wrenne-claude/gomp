@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Templates as T
@@ -20,7 +21,7 @@ Item {
         target: drawer.workspace ? drawer.workspace.subagents : null
         function onDataChanged() { drawer.refresh() }
     }
-    readonly property bool running: info.status === "running" || info.status === "pending"
+    readonly property bool running: drawer.info.status === "running" || drawer.info.status === "pending"
 
     Rectangle {
         anchors.fill: parent
@@ -47,25 +48,25 @@ Item {
             Layout.fillWidth: true
             spacing: Theme.s2
             GStatusLight {
-                tint: info.status === "completed" ? Theme.success : info.status === "failed" || info.status === "aborted" ? Theme.danger : Theme.accent
+                tint: drawer.info.status === "completed" ? Theme.success : drawer.info.status === "failed" || drawer.info.status === "aborted" ? Theme.danger : Theme.accent
                 pulse: drawer.running
             }
-            GText { text: info.agentId || ""; role: "heading"; Layout.fillWidth: true }
+            GText { text: drawer.info.agentId || ""; role: "heading"; Layout.fillWidth: true }
             GIconButton { iconName: "close"; tooltip: qsTr("Close"); shortcutText: "Esc"; onClicked: drawer.closeRequested() }
         }
         GText {
             Layout.fillWidth: true
-            text: info.task || ""
+            text: drawer.info.task || ""
             tone: "secondary"
             wrapMode: Text.WordWrap
             elide: Text.ElideNone
         }
         RowLayout {
             spacing: Theme.s2
-            GBadge { text: info.agent || "" }
-            GBadge { text: info.modelRole || ""; tone: "info"; visible: (info.modelRole || "").length > 0 }
-            GText { text: Fmt.tokens(info.tokens || 0) + qsTr(" tokens"); role: "readout"; tone: "tertiary" }
-            GText { text: Fmt.cost(info.cost || 0); role: "readout"; tone: "tertiary" }
+            GBadge { text: drawer.info.agent || "" }
+            GBadge { text: drawer.info.modelRole || ""; tone: "info"; visible: (drawer.info.modelRole || "").length > 0 }
+            GText { text: Fmt.tokens(drawer.info.tokens || 0) + qsTr(" tokens"); role: "readout"; tone: "tertiary" }
+            GText { text: Fmt.cost(drawer.info.cost || 0); role: "readout"; tone: "tertiary" }
         }
         GText { text: qsTr("Output"); role: "caption"; tone: "tertiary"; Layout.topMargin: Theme.s2 }
         Rectangle {
@@ -88,12 +89,12 @@ Item {
                 TextEdit {
                     id: outText
                     width: outFlick.width
-                    text: (info.output || "").length ? info.output : (drawer.running ? qsTr("Waiting for output…") : qsTr("This agent wrote no output."))
+                    text: (drawer.info.output || "").length ? drawer.info.output : (drawer.running ? qsTr("Waiting for output…") : qsTr("This agent wrote no output."))
                     readOnly: true
                     selectByMouse: true
                     wrapMode: TextEdit.Wrap
                     font: Theme.fCodeSmall
-                    color: (info.output || "").length ? Theme.textPrimary : Theme.textTertiary
+                    color: (drawer.info.output || "").length ? Theme.textPrimary : Theme.textTertiary
                     selectionColor: Theme.selection
                 }
             }
@@ -117,7 +118,7 @@ Item {
                 text: qsTr("Copy output")
                 iconName: "copy"
                 variant: "ghost"
-                onClicked: App.copyText(info.output || "")
+                onClicked: App.copyText(drawer.info.output || "")
             }
             Item { Layout.fillWidth: true }
             GButton {

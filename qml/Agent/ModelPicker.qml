@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Templates as T
@@ -40,10 +41,11 @@ GPopover {
             T.ScrollBar.vertical: GScrollBar {}
             section.property: App.models.query.length ? "" : "provider"
             section.delegate: Item {
+                id: d42
                 required property string section
                 width: list.width
                 height: 30
-                GText { x: Theme.s4; anchors.bottom: parent.bottom; anchors.bottomMargin: 4; text: section; role: "caption"; tone: "tertiary" }
+                GText { x: Theme.s4; anchors.bottom: parent.bottom; anchors.bottomMargin: 4; text: d42.section; role: "caption"; tone: "tertiary" }
             }
             function pick(row) {
                 const m = App.models.at(row)

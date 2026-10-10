@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Gomp
@@ -31,7 +32,7 @@ Rectangle {
                 Layout.alignment: Qt.AlignHCenter
                 implicitWidth: 40
                 implicitHeight: 40
-                readonly property bool selected: Ui.screen === modelData.screen
+                readonly property bool selected: Ui.screen === navItem.modelData.screen
                 GIconButton {
                     anchors.fill: parent
                     size: 40

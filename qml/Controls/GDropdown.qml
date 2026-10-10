@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Templates as T
 import Gomp
@@ -64,7 +65,7 @@ T.ComboBox {
         required property var modelData
         required property int index
         width: ListView.view ? ListView.view.width : 0
-        implicitHeight: modelData.description ? 48 : Theme.controlMd
+        implicitHeight: item.modelData.description ? 48 : Theme.controlMd
         hoverEnabled: true
         highlighted: control.highlightedIndex === index
         leftPadding: Theme.s3

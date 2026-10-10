@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Gomp
@@ -13,12 +14,13 @@ ColumnLayout {
     spacing: Theme.s2
 
     component Bar: RowLayout {
+        id: bar
         property string label
         property real tokens
         property color tint
         Layout.fillWidth: true
         spacing: Theme.s2
-        GText { text: parent.label; role: "caption"; tone: "tertiary"; Layout.preferredWidth: 44 }
+        GText { text: bar.label; role: "caption"; tone: "tertiary"; Layout.preferredWidth: 44 }
         Item {
             Layout.fillWidth: true
             implicitHeight: 10
@@ -27,12 +29,12 @@ ColumnLayout {
                 id: fill
                 height: parent.height
                 radius: 3
-                color: parent.parent.tint
-                width: res.before > 0 ? parent.width * Math.min(1, parent.parent.tokens / res.before) : 0
+                color: bar.tint
+                width: res.before > 0 ? parent.width * Math.min(1, bar.tokens / res.before) : 0
                 Behavior on width { NumberAnimation { duration: Theme.dMeter; easing.type: Theme.easeOut } }
             }
         }
-        GText { text: Fmt.tokens(parent.tokens); role: "readout"; Layout.preferredWidth: 48; horizontalAlignment: Text.AlignRight }
+        GText { text: Fmt.tokens(bar.tokens); role: "readout"; Layout.preferredWidth: 48; horizontalAlignment: Text.AlignRight }
     }
 
     GText { text: qsTr("Last compaction"); role: "caption"; tone: "tertiary" }

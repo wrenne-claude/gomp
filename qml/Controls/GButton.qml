@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Templates as T
 import Gomp
@@ -65,6 +66,7 @@ T.Button {
             Repeater {
                 model: 3
                 Rectangle {
+                    id: dot
                     required property int index
                     width: 5; height: 5; radius: 2.5
                     color: control.fg
@@ -72,10 +74,10 @@ T.Button {
                     SequentialAnimation on opacity {
                         running: control.loading && !Theme.reduceMotion
                         loops: Animation.Infinite
-                        PauseAnimation { duration: index * 140 }
+                        PauseAnimation { duration: dot.index * 140 }
                         NumberAnimation { to: 1; duration: 220 }
                         NumberAnimation { to: 0.35; duration: 220 }
-                        PauseAnimation { duration: (2 - index) * 140 + 200 }
+                        PauseAnimation { duration: (2 - dot.index) * 140 + 200 }
                     }
                 }
             }

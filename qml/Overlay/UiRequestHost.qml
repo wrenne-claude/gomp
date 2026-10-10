@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Templates as T
@@ -50,13 +51,14 @@ Item {
         Repeater {
             model: host.kind === "select" && host.request ? host.request.options : []
             GListRow {
+                id: d52
                 required property string modelData
                 required property int index
                 Layout.fillWidth: true
-                title: modelData
+                title: d52.modelData
                 subtitle: host.request.optionDescriptions[index] || ""
                 iconName: "chevron-right"
-                onClicked: host.submit(modelData)
+                onClicked: host.submit(d52.modelData)
             }
         }
         // input
@@ -124,21 +126,22 @@ Item {
                     Repeater {
                         model: q.modelData.options
                         GButton {
+                            id: d126
                             required property var modelData
-                            readonly property bool chosen: ((host.answers[q.modelData.id] || {}).selected || []).indexOf(modelData.label) >= 0
-                            text: modelData.label
+                            readonly property bool chosen: ((host.answers[q.modelData.id] || {}).selected || []).indexOf(d126.modelData.label) >= 0
+                            text: d126.modelData.label
                             size: "sm"
                             variant: chosen ? "primary" : "secondary"
                             onClicked: {
                                 const a = Object.assign({ selected: [], custom: "" }, host.answers[q.modelData.id] || {})
                                 const sel = a.selected.slice()
-                                const at = sel.indexOf(modelData.label)
-                                if (q.modelData.multi) { if (at >= 0) sel.splice(at, 1); else sel.push(modelData.label) }
-                                else sel.splice(0, sel.length, modelData.label)
+                                const at = sel.indexOf(d126.modelData.label)
+                                if (q.modelData.multi) { if (at >= 0) sel.splice(at, 1); else sel.push(d126.modelData.label) }
+                                else sel.splice(0, sel.length, d126.modelData.label)
                                 a.selected = sel
                                 const next = Object.assign({}, host.answers); next[q.modelData.id] = a; host.answers = next
                             }
-                            GToolTip { visible: parent.hovered && (parent.modelData.description || "").length > 0; text: parent.modelData.description || "" }
+                            GToolTip { visible: d126.hovered && (d126.modelData.description || "").length > 0; text: d126.modelData.description || "" }
                         }
                     }
                 }

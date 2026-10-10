@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import Gomp
 import Gomp.Core
@@ -12,6 +13,7 @@ Row {
     Repeater {
         model: kbd.sequence.length ? App.shortcuts.portableText(kbd.sequence).split("+").filter(k => k.length > 0) : []
         Rectangle {
+            id: d14
             required property string modelData
             height: 18
             width: Math.max(18, label.implicitWidth + 8)
@@ -27,7 +29,7 @@ Row {
             GText {
                 id: label
                 anchors.centerIn: parent
-                text: modelData === "Return" ? "Enter" : modelData
+                text: d14.modelData === "Return" ? "Enter" : d14.modelData
                 role: "readout"
                 font.pixelSize: 11
                 color: Theme.textSecondary

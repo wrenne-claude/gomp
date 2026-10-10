@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Templates as T
@@ -10,6 +11,8 @@ Item {
     id: screen
     property string page: Ui.settingsPage
     property string query: ""
+    // Pages are plain Items with optional title, subtitle and configure(); read them untyped.
+    readonly property var current: pageLoader.item
     readonly property var curated: [
         { id: "providers", label: qsTr("Providers and keys"), icon: "key" },
         { id: "models", label: qsTr("Models and roles"), icon: "chip" },
@@ -70,20 +73,21 @@ Item {
                         Repeater {
                             model: screen.curated
                             GListRow {
+                                id: d72
                                 required property var modelData
                                 Layout.fillWidth: true
                                 dense: true
-                                title: modelData.label
-                                iconName: modelData.icon
-                                selected: screen.query.length === 0 && screen.page === modelData.id
-                                onClicked: { navSearch.text = ""; screen.page = modelData.id; Ui.settingsPage = modelData.id }
+                                title: d72.modelData.label
+                                iconName: d72.modelData.icon
+                                selected: screen.query.length === 0 && screen.page === d72.modelData.id
+                                onClicked: { navSearch.text = ""; screen.page = d72.modelData.id; Ui.settingsPage = d72.modelData.id }
                                 GBadge {
-                                    visible: modelData.id === "providers" && App.providers.plaintextKeyCount > 0
+                                    visible: d72.modelData.id === "providers" && App.providers.plaintextKeyCount > 0
                                     text: String(App.providers.plaintextKeyCount)
                                     tone: "caution"
                                 }
                                 GBadge {
-                                    visible: modelData.id === "keybindings" && App.shortcuts.conflictCount > 0
+                                    visible: d72.modelData.id === "keybindings" && App.shortcuts.conflictCount > 0
                                     text: String(App.shortcuts.conflictCount)
                                     tone: "danger"
                                 }
@@ -93,13 +97,14 @@ Item {
                         Repeater {
                             model: App.settings.sections
                             GListRow {
+                                id: d95
                                 required property var modelData
                                 Layout.fillWidth: true
                                 dense: true
-                                title: modelData.title
-                                selected: screen.query.length === 0 && screen.page === "tab:" + modelData.id
-                                onClicked: { navSearch.text = ""; screen.page = "tab:" + modelData.id; Ui.settingsPage = screen.page }
-                                GText { text: String(modelData.count); role: "readout"; tone: "tertiary" }
+                                title: d95.modelData.title
+                                selected: screen.query.length === 0 && screen.page === "tab:" + d95.modelData.id
+                                onClicked: { navSearch.text = ""; screen.page = "tab:" + d95.modelData.id; Ui.settingsPage = screen.page }
+                                GText { text: String(d95.modelData.count); role: "readout"; tone: "tertiary" }
                             }
                         }
                         GListRow {
@@ -133,12 +138,12 @@ Item {
                     Layout.fillWidth: true
                     spacing: 2
                     GText {
-                        text: screen.query.length ? qsTr("Results for “%1”").arg(screen.query) : pageLoader.item ? pageLoader.item.title : ""
+                        text: screen.query.length ? qsTr("Results for “%1”").arg(screen.query) : screen.current ? screen.current.title : ""
                         role: "title"
                         Layout.fillWidth: true
                     }
                     GText {
-                        text: screen.query.length ? "" : pageLoader.item && pageLoader.item.subtitle ? pageLoader.item.subtitle : ""
+                        text: screen.query.length ? "" : screen.current && screen.current.subtitle ? screen.current.subtitle : ""
                         tone: "secondary"
                         visible: text.length > 0
                         wrapMode: Text.WordWrap
@@ -188,12 +193,12 @@ Item {
                       : screen.page === "keybindings" ? "KeybindingsPage.qml"
                       : screen.page === "advanced" ? "AdvancedPage.qml"
                       : "ProvidersPage.qml"
-                onLoaded: if (item.configure) item.configure(screen.page, screen.query)
+                onLoaded: if (screen.current && screen.current.configure) screen.current.configure(screen.page, screen.query)
             }
             Connections {
                 target: screen
-                function onQueryChanged() { if (pageLoader.item && pageLoader.item.configure) pageLoader.item.configure(screen.page, screen.query) }
-                function onPageChanged() { if (pageLoader.item && pageLoader.item.configure) pageLoader.item.configure(screen.page, screen.query) }
+                function onQueryChanged() { if (screen.current && screen.current.configure) screen.current.configure(screen.page, screen.query) }
+                function onPageChanged() { if (screen.current && screen.current.configure) screen.current.configure(screen.page, screen.query) }
             }
 
             PendingBar { Layout.fillWidth: true }

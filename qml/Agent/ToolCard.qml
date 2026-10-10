@@ -1,5 +1,7 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Templates as T
 import Gomp
 import Gomp.Core
 
@@ -170,7 +172,7 @@ Item {
                         size: "sm"
                         iconName: "check"
                         onClicked: card.workspace.approve(card.approvalId, true)
-                        GToolTip { visible: parent.hovered; text: qsTr("Approve"); shortcut: App.shortcuts.map["approval.approve"] || "" }
+                        GToolTip { visible: (parent as T.AbstractButton).hovered; text: qsTr("Approve"); shortcut: App.shortcuts.map["approval.approve"] || "" }
                     }
                 }
             }

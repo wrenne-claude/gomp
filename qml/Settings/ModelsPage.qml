@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Templates as T
@@ -56,7 +57,7 @@ ColumnLayout {
                 GCard {
                     id: roleCard
                     required property var modelData
-                    readonly property string current: page.roles[modelData.id] || ""
+                    readonly property string current: page.roles[roleCard.modelData.id] || ""
                     readonly property var info: App.models.get(current.split(":")[0])
                     Layout.fillWidth: true
                     implicitHeight: 64

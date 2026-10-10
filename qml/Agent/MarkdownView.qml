@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import Gomp
 
@@ -17,7 +18,7 @@ Column {
             required property var modelData
             required property int index
             width: md.width
-            sourceComponent: modelData.kind === "code" ? codeComp : proseComp
+            sourceComponent: seg.modelData.kind === "code" ? codeComp : proseComp
             Component {
                 id: proseComp
                 TextEdit {

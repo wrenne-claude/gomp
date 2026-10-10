@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import Gomp
 
@@ -35,7 +36,7 @@ FocusScope {
                 height: row.height
                 width: label.implicitWidth + (count.visible ? count.width + Theme.s1 + 2 : 0)
                 Accessible.role: Accessible.PageTab
-                Accessible.name: modelData.label
+                Accessible.name: tab.modelData.label
                 GText {
                     id: label
                     anchors.verticalCenter: parent.verticalCenter

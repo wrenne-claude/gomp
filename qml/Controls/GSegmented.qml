@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import Gomp
 
@@ -62,7 +63,7 @@ FocusScope {
                 height: row.height
                 width: content.implicitWidth + (root.size === "sm" ? Theme.s3 : Theme.s4) * 2
                 Accessible.role: Accessible.PageTab
-                Accessible.name: modelData.label
+                Accessible.name: seg.modelData.label
                 Accessible.selected: selected
                 Row {
                     id: content

@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Shapes
@@ -40,11 +41,12 @@ Column {
             Repeater {
                 model: row.through
                 Rectangle {
+                    id: d42
                     required property int modelData
-                    x: 10 + modelData * timeline.laneGap - 1
+                    x: 10 + d42.modelData * timeline.laneGap - 1
                     width: 2
                     height: row.height
-                    color: modelData === 0 ? Theme.alpha(Theme.accent, 0.6) : Theme.alpha(Theme.blueprint, 0.5)
+                    color: d42.modelData === 0 ? Theme.alpha(Theme.accent, 0.6) : Theme.alpha(Theme.blueprint, 0.5)
                 }
             }
             // Incoming line from the parent.

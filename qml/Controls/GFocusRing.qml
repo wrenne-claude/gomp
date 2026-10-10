@@ -1,10 +1,11 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import Gomp
 
 // Keyboard focus indicator: a 2px accent ring offset 2px outside its parent. `target` is the
 // control whose focus it reports (often the parent's owner, e.g. a button for its background).
 Rectangle {
-    property Item target: parent
+    property var target: parent // any Item; Controls add visualFocus and focusReason
     property real radius_: Theme.rMd
     anchors.fill: parent
     anchors.margins: -4

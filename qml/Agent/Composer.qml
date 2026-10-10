@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Dialogs
@@ -272,7 +273,7 @@ Item {
                         variant: "danger"
                         Layout.leftMargin: Theme.s2
                         onClicked: composer.workspace.stop()
-                        GToolTip { visible: parent.hovered; text: qsTr("Stop the agent"); shortcut: App.shortcuts.map["agent.stop"] || "" }
+                        GToolTip { visible: (parent as T.AbstractButton).hovered; text: qsTr("Stop the agent"); shortcut: App.shortcuts.map["agent.stop"] || "" }
                     }
                     GButton {
                         text: composer.busy ? qsTr("Queue") : qsTr("Send")

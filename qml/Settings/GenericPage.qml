@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Templates as T
@@ -44,15 +45,16 @@ Item {
         header: Loader {
             width: list.width - list.leftMargin - list.rightMargin
             sourceComponent: page.headerComponent
-            height: item ? item.implicitHeight + Theme.s4 : 0
+            height: item ? (item as Item).implicitHeight + Theme.s4 : 0
         }
         section.property: "group"
         section.criteria: ViewSection.FullString
         section.delegate: Item {
+            id: d51
             required property string section
             width: list.width - list.leftMargin - list.rightMargin
             height: 44
-            GText { x: Theme.s4; anchors.bottom: parent.bottom; anchors.bottomMargin: Theme.s1; text: section; role: "caption"; tone: "tertiary" }
+            GText { x: Theme.s4; anchors.bottom: parent.bottom; anchors.bottomMargin: Theme.s1; text: d51.section; role: "caption"; tone: "tertiary" }
             GDivider { anchors.bottom: parent.bottom; x: Theme.s4; width: parent.width - Theme.s4 * 2; opacity: 0.6 }
         }
         delegate: SettingRow { width: list.width - list.leftMargin - list.rightMargin }

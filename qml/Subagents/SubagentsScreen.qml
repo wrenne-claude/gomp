@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Shapes
@@ -103,17 +104,18 @@ Item {
                     delegate: Shape {
                         id: connector
                         required property int index
-                        required property string status
+                        required property var model // `status` would shadow Shape.status
+                        readonly property string agentStatus: model.status
                         readonly property Item lane: laneRepeater.count > index ? laneRepeater.itemAt(index) : null
                         anchors.fill: parent
                         preferredRendererType: Shape.CurveRenderer
                         visible: lane !== null
                         ShapePath {
-                            strokeColor: connector.status === "running" || connector.status === "pending" ? Theme.alpha(Theme.accent, 0.7)
-                                       : connector.status === "completed" ? Theme.alpha(Theme.success, 0.5) : Theme.alpha(Theme.danger, 0.5)
+                            strokeColor: connector.agentStatus === "running" || connector.agentStatus === "pending" ? Theme.alpha(Theme.accent, 0.7)
+                                       : connector.agentStatus === "completed" ? Theme.alpha(Theme.success, 0.5) : Theme.alpha(Theme.danger, 0.5)
                             strokeWidth: 1.5
                             fillColor: "transparent"
-                            strokeStyle: connector.status === "pending" ? ShapePath.DashLine : ShapePath.SolidLine
+                            strokeStyle: connector.agentStatus === "pending" ? ShapePath.DashLine : ShapePath.SolidLine
                             startX: hub.width
                             startY: hub.y + hub.height / 2
                             PathCubic {

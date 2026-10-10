@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Templates as T
@@ -35,7 +36,7 @@ Item {
                     required property var modelData
                     Layout.fillWidth: true
                     implicitHeight: 72
-                    opacity: modelData.enabled ? 1 : 0.7
+                    opacity: card.modelData.enabled ? 1 : 0.7
                     RowLayout {
                         anchors.fill: parent
                         anchors.margins: Theme.s3

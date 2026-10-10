@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Gomp
@@ -27,16 +28,17 @@ GSheet {
     Repeater {
         model: sheet.files
         ColumnLayout {
+            id: d29
             required property var modelData
             Layout.fillWidth: true
             spacing: Theme.s2
             RowLayout {
                 spacing: Theme.s2
-                GBadge { text: modelData.scope === "project" ? qsTr("Project") : qsTr("All projects"); tone: modelData.scope === "project" ? "plan" : "neutral" }
-                GText { text: Fmt.shortPath(modelData.path); role: "code"; Layout.fillWidth: true }
+                GBadge { text: d29.modelData.scope === "project" ? qsTr("Project") : qsTr("All projects"); tone: d29.modelData.scope === "project" ? "plan" : "neutral" }
+                GText { text: Fmt.shortPath(d29.modelData.path); role: "code"; Layout.fillWidth: true }
             }
             GText {
-                visible: modelData.hasComments
+                visible: d29.modelData.hasComments
                 text: qsTr("This file has comments. omp rewrites the file when saving, so comments may be removed.")
                 role: "caption"
                 tone: "caution"
@@ -44,19 +46,19 @@ GSheet {
                 Layout.fillWidth: true
             }
             GText {
-                visible: modelData.error.length > 0
-                text: modelData.error
+                visible: d29.modelData.error.length > 0
+                text: d29.modelData.error
                 tone: "danger"
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
             DiffView {
                 Layout.fillWidth: true
-                visible: modelData.error.length === 0
-                lines: modelData.lines
-                path: modelData.path.split("/").pop()
-                added: modelData.added
-                removed: modelData.removed
+                visible: d29.modelData.error.length === 0
+                lines: d29.modelData.lines
+                path: d29.modelData.path.split("/").pop()
+                added: d29.modelData.added
+                removed: d29.modelData.removed
             }
         }
     }

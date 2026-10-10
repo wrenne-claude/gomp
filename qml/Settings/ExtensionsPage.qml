@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Templates as T
@@ -39,6 +40,7 @@ GenericPage {
             Repeater {
                 model: page.plugins
                 GCard {
+                    id: d41
                     required property var modelData
                     Layout.fillWidth: true
                     implicitHeight: 60
@@ -53,14 +55,14 @@ GenericPage {
                             spacing: 2
                             RowLayout {
                                 spacing: Theme.s2
-                                GText { text: modelData.name || modelData.id || ""; role: "strong" }
-                                GText { text: modelData.version || ""; role: "readout"; tone: "tertiary" }
+                                GText { text: d41.modelData.name || d41.modelData.id || ""; role: "strong" }
+                                GText { text: d41.modelData.version || ""; role: "readout"; tone: "tertiary" }
                             }
-                            GText { text: modelData.description || ""; role: "caption"; tone: "tertiary"; Layout.fillWidth: true }
+                            GText { text: d41.modelData.description || ""; role: "caption"; tone: "tertiary"; Layout.fillWidth: true }
                         }
                         GToggle {
-                            checked: modelData.enabled !== false
-                            onToggled: App.ompRun(["plugin", checked ? "enable" : "disable", modelData.name], (ok, msg) => { Ui.toast(ok ? "info" : "error", msg); page.reload() })
+                            checked: d41.modelData.enabled !== false
+                            onToggled: App.ompRun(["plugin", checked ? "enable" : "disable", d41.modelData.name], (ok, msg) => { Ui.toast(ok ? "info" : "error", msg); page.reload() })
                         }
                     }
                 }
@@ -79,6 +81,7 @@ GenericPage {
                 Repeater {
                     model: page.skills
                     GCard {
+                        id: d81
                         required property var modelData
                         width: 280
                         height: 64
@@ -88,10 +91,10 @@ GenericPage {
                             spacing: 2
                             RowLayout {
                                 spacing: Theme.s2
-                                GText { text: modelData.name || ""; role: "strong" }
-                                GText { text: modelData.version || ""; role: "readout"; tone: "tertiary" }
+                                GText { text: d81.modelData.name || ""; role: "strong" }
+                                GText { text: d81.modelData.version || ""; role: "readout"; tone: "tertiary" }
                             }
-                            GText { text: modelData.description || ""; role: "caption"; tone: "tertiary"; Layout.fillWidth: true }
+                            GText { text: d81.modelData.description || ""; role: "caption"; tone: "tertiary"; Layout.fillWidth: true }
                         }
                     }
                 }

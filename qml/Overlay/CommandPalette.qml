@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Templates as T
@@ -144,11 +145,12 @@ T.Popup {
             section.property: "category"
             section.criteria: ViewSection.FullString
             section.delegate: Item {
+                id: d146
                 required property string section
                 width: list.width
                 height: 28
                 visible: App.palette.query.length === 0
-                GText { x: Theme.s4; anchors.bottom: parent.bottom; anchors.bottomMargin: 4; text: section; role: "caption"; tone: "tertiary" }
+                GText { x: Theme.s4; anchors.bottom: parent.bottom; anchors.bottomMargin: 4; text: d146.section; role: "caption"; tone: "tertiary" }
             }
             delegate: Item {
                 id: entry

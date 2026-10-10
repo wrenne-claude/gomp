@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Gomp
@@ -43,12 +44,13 @@ ColumnLayout {
                 { text: qsTr("Audit the API for security issues in parallel"), icon: "nodes" }
             ]
             GButton {
+                id: d45
                 required property var modelData
                 visible: empty.workspace && empty.workspace.mock
-                text: modelData.text
-                iconName: modelData.icon
+                text: d45.modelData.text
+                iconName: d45.modelData.icon
                 size: "sm"
-                onClicked: empty.workspace.send(modelData.text)
+                onClicked: empty.workspace.send(d45.modelData.text)
             }
         }
     }

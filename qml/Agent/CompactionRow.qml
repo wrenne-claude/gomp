@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Gomp
@@ -19,7 +20,7 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             spacing: Theme.s3
-            Rectangle { Layout.fillWidth: true; height: 1; color: Theme.hairlineStrong }
+            Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairlineStrong }
             GIcon { name: "compress"; size: Theme.iconSm; color: Theme.textTertiary }
             GText {
                 text: row.tokensBefore > 0
@@ -35,7 +36,7 @@ Item {
                 tooltip: row.expanded ? qsTr("Hide summary") : qsTr("Show what was kept")
                 onClicked: row.expanded = !row.expanded
             }
-            Rectangle { Layout.fillWidth: true; height: 1; color: Theme.hairlineStrong }
+            Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.hairlineStrong }
         }
         GText {
             Layout.fillWidth: true

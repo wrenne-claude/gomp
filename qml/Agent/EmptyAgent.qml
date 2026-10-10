@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Dialogs
@@ -45,13 +46,14 @@ Item {
             Repeater {
                 model: App.prefs.recentProjects.slice(0, 6)
                 GListRow {
+                    id: d47
                     required property string modelData
                     Layout.fillWidth: true
                     iconName: "folder"
-                    title: modelData.split("/").pop()
-                    subtitle: Fmt.shortPath(modelData)
+                    title: d47.modelData.split("/").pop()
+                    subtitle: Fmt.shortPath(d47.modelData)
                     dense: true
-                    onClicked: App.openProject(modelData)
+                    onClicked: App.openProject(d47.modelData)
                 }
             }
         }

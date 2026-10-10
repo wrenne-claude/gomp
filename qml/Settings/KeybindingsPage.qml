@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Templates as T
@@ -22,10 +23,11 @@ Item {
         T.ScrollBar.vertical: GScrollBar {}
         section.property: "category"
         section.delegate: Item {
+            id: d24
             required property string section
             width: Math.min(list.width - Theme.s6 * 2, 900)
             height: 40
-            GText { anchors.bottom: parent.bottom; anchors.bottomMargin: 4; text: section; role: "caption"; tone: "tertiary" }
+            GText { anchors.bottom: parent.bottom; anchors.bottomMargin: 4; text: d24.section; role: "caption"; tone: "tertiary" }
         }
         header: RowLayout {
             width: Math.min(list.width - Theme.s6 * 2, 900)

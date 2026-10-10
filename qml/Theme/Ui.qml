@@ -1,4 +1,5 @@
 pragma Singleton
+pragma ComponentBehavior: Bound
 import QtQuick
 
 // Shell state shared across the component tree: the backdrop frosted layers blur, the toast and

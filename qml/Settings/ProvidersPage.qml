@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Templates as T
@@ -75,6 +76,7 @@ Item {
                 Repeater {
                     model: App.providers.customProviders
                     GCard {
+                        id: d77
                         required property var modelData
                         Layout.fillWidth: true
                         implicitHeight: 64
@@ -87,24 +89,24 @@ Item {
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 2
-                                GText { text: modelData.name; role: "strong" }
-                                GText { text: modelData.baseUrl + "  " + modelData.api; role: "caption"; tone: "tertiary"; Layout.fillWidth: true }
+                                GText { text: d77.modelData.name; role: "strong" }
+                                GText { text: d77.modelData.baseUrl + "  " + d77.modelData.api; role: "caption"; tone: "tertiary"; Layout.fillWidth: true }
                             }
                             GBadge {
-                                text: modelData.keySource === "keyring" ? qsTr("Key in keyring")
-                                    : modelData.keySource === "plaintext" ? qsTr("Plain-text key")
-                                    : modelData.keySource === "env" ? qsTr("From %1").arg(modelData.envVar)
-                                    : modelData.keySource === "command" ? qsTr("Key from a command") : qsTr("No key")
-                                tone: modelData.keySource === "keyring" ? "success" : modelData.keySource === "plaintext" ? "caution" : "neutral"
-                                iconName: modelData.keySource === "keyring" ? "lock" : modelData.keySource === "plaintext" ? "alert" : ""
+                                text: d77.modelData.keySource === "keyring" ? qsTr("Key in keyring")
+                                    : d77.modelData.keySource === "plaintext" ? qsTr("Plain-text key")
+                                    : d77.modelData.keySource === "env" ? qsTr("From %1").arg(d77.modelData.envVar)
+                                    : d77.modelData.keySource === "command" ? qsTr("Key from a command") : qsTr("No key")
+                                tone: d77.modelData.keySource === "keyring" ? "success" : d77.modelData.keySource === "plaintext" ? "caution" : "neutral"
+                                iconName: d77.modelData.keySource === "keyring" ? "lock" : d77.modelData.keySource === "plaintext" ? "alert" : ""
                             }
                             GButton {
-                                visible: modelData.keySource === "plaintext"
+                                visible: d77.modelData.keySource === "plaintext"
                                 text: qsTr("Move to keyring")
                                 size: "sm"
                                 variant: "primary"
                                 enabled: App.providers.keyringAvailable
-                                onClicked: App.providers.moveKeyToKeyring(modelData.name)
+                                onClicked: App.providers.moveKeyToKeyring(d77.modelData.name)
                             }
                             GIconButton {
                                 iconName: "more"
@@ -112,9 +114,9 @@ Item {
                                 onClicked: provMenu.popup()
                                 GMenu {
                                     id: provMenu
-                                    GMenuItem { text: qsTr("Set a new key…"); iconName: "key"; onTriggered: { keySheet.target = modelData.name; keySheet.envVar = ""; keySheet.open() } }
+                                    GMenuItem { text: qsTr("Set a new key…"); iconName: "key"; onTriggered: { keySheet.target = d77.modelData.name; keySheet.envVar = ""; keySheet.open() } }
                                     GMenuSeparator {}
-                                    GMenuItem { text: qsTr("Remove provider"); iconName: "trash"; destructive: true; onTriggered: App.providers.removeCustomProvider(modelData.name) }
+                                    GMenuItem { text: qsTr("Remove provider"); iconName: "trash"; destructive: true; onTriggered: App.providers.removeCustomProvider(d77.modelData.name) }
                                 }
                             }
                         }
@@ -140,13 +142,14 @@ Item {
                     Repeater {
                         model: App.providers.oauthProviders
                         GButton {
+                            id: d142
                             required property var modelData
-                            text: modelData.authenticated ? qsTr("%1 connected").arg(modelData.name) : qsTr("Sign in to %1").arg(modelData.name)
-                            iconName: modelData.authenticated ? "check" : "external"
-                            variant: modelData.authenticated ? "ghost" : "secondary"
-                            enabled: modelData.available && App.providers.loginState === "idle" || App.providers.loginState === "done" || App.providers.loginState === "failed"
-                            loading: App.providers.loginProvider === modelData.id && (App.providers.loginState === "starting" || App.providers.loginState === "browser")
-                            onClicked: App.providers.login(modelData.id)
+                            text: d142.modelData.authenticated ? qsTr("%1 connected").arg(d142.modelData.name) : qsTr("Sign in to %1").arg(d142.modelData.name)
+                            iconName: d142.modelData.authenticated ? "check" : "external"
+                            variant: d142.modelData.authenticated ? "ghost" : "secondary"
+                            enabled: d142.modelData.available && App.providers.loginState === "idle" || App.providers.loginState === "done" || App.providers.loginState === "failed"
+                            loading: App.providers.loginProvider === d142.modelData.id && (App.providers.loginState === "starting" || App.providers.loginState === "browser")
+                            onClicked: App.providers.login(d142.modelData.id)
                         }
                     }
                 }
@@ -169,9 +172,10 @@ Item {
                 Repeater {
                     model: App.providers.envProviders.filter(p => page.showAll || p.source !== "none" || ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "OPENROUTER_API_KEY", "XAI_API_KEY", "MISTRAL_API_KEY", "GROQ_API_KEY"].indexOf(p.envVar) >= 0)
                     Rectangle {
+                        id: d171
                         required property var modelData
                         Layout.fillWidth: true
-                        implicitHeight: page.editingEnv === modelData.envVar ? 96 : 52
+                        implicitHeight: page.editingEnv === d171.modelData.envVar ? 96 : 52
                         radius: Theme.rMd
                         color: envHover.hovered ? Theme.alpha(Theme.surface2, 0.6) : "transparent"
                         HoverHandler { id: envHover }
@@ -185,31 +189,31 @@ Item {
                                 ColumnLayout {
                                     Layout.fillWidth: true
                                     spacing: 0
-                                    GText { text: modelData.description; role: "strong"; Layout.fillWidth: true }
-                                    GText { text: modelData.envVar; font: Theme.fCodeSmall; tone: "tertiary" }
+                                    GText { text: d171.modelData.description; role: "strong"; Layout.fillWidth: true }
+                                    GText { text: d171.modelData.envVar; font: Theme.fCodeSmall; tone: "tertiary" }
                                 }
                                 GBadge {
-                                    text: modelData.source === "keyring" ? qsTr("In keyring") : modelData.source === "environment" ? qsTr("From your shell") : qsTr("Not set")
-                                    tone: modelData.source === "keyring" ? "success" : modelData.source === "environment" ? "info" : "neutral"
-                                    iconName: modelData.source === "keyring" ? "lock" : ""
+                                    text: d171.modelData.source === "keyring" ? qsTr("In keyring") : d171.modelData.source === "environment" ? qsTr("From your shell") : qsTr("Not set")
+                                    tone: d171.modelData.source === "keyring" ? "success" : d171.modelData.source === "environment" ? "info" : "neutral"
+                                    iconName: d171.modelData.source === "keyring" ? "lock" : ""
                                 }
                                 GButton {
-                                    text: modelData.source === "keyring" ? qsTr("Replace") : qsTr("Set key")
+                                    text: d171.modelData.source === "keyring" ? qsTr("Replace") : qsTr("Set key")
                                     size: "sm"
-                                    visible: page.editingEnv !== modelData.envVar
-                                    onClicked: { page.editingEnv = modelData.envVar; keyField.text = ""; keyField.forceActiveFocus() }
+                                    visible: page.editingEnv !== d171.modelData.envVar
+                                    onClicked: { page.editingEnv = d171.modelData.envVar; keyField.text = ""; keyField.forceActiveFocus() }
                                 }
                                 GIconButton {
-                                    visible: modelData.source === "keyring" && page.editingEnv !== modelData.envVar
+                                    visible: d171.modelData.source === "keyring" && page.editingEnv !== d171.modelData.envVar
                                     size: Theme.controlSm
                                     iconName: "trash"
                                     tooltip: qsTr("Remove from keyring")
-                                    onClicked: App.providers.clearEnvKey(modelData.envVar)
+                                    onClicked: App.providers.clearEnvKey(d171.modelData.envVar)
                                 }
                             }
                             RowLayout {
                                 Layout.fillWidth: true
-                                visible: page.editingEnv === modelData.envVar
+                                visible: page.editingEnv === d171.modelData.envVar
                                 spacing: Theme.s2
                                 GTextField {
                                     id: keyField
@@ -217,7 +221,7 @@ Item {
                                     echoMode: TextInput.Password
                                     mono: true
                                     placeholderText: qsTr("Paste the key")
-                                    onAccepted: if (text.length) { App.providers.setEnvKey(modelData.envVar, text); text = ""; page.editingEnv = "" }
+                                    onAccepted: if (text.length) { App.providers.setEnvKey(d171.modelData.envVar, text); text = ""; page.editingEnv = "" }
                                     Keys.onEscapePressed: page.editingEnv = ""
                                 }
                                 GButton { text: qsTr("Cancel"); variant: "ghost"; size: "sm"; onClicked: page.editingEnv = "" }

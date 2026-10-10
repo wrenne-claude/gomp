@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Templates as T
@@ -53,10 +54,11 @@ Rectangle {
             Repeater {
                 model: dv.lines.slice(0, dv.maxLines)
                 delegate: Rectangle {
+                    id: d55
                     required property var modelData
                     width: Math.max(column.width, row.implicitWidth)
-                    height: modelData.kind === "gap" ? 22 : 20
-                    color: modelData.kind === "added" ? Theme.diffAddBg : modelData.kind === "removed" ? Theme.diffRemoveBg : "transparent"
+                    height: d55.modelData.kind === "gap" ? 22 : 20
+                    color: d55.modelData.kind === "added" ? Theme.diffAddBg : d55.modelData.kind === "removed" ? Theme.diffRemoveBg : "transparent"
                     Row {
                         id: row
                         height: parent.height
@@ -65,7 +67,7 @@ Rectangle {
                             height: parent.height
                             verticalAlignment: Text.AlignVCenter
                             horizontalAlignment: Text.AlignRight
-                            text: parent.parent.modelData.kind === "gap" ? "" : (parent.parent.modelData.oldNo || "")
+                            text: d55.modelData.kind === "gap" ? "" : (d55.modelData.oldNo || "")
                             role: "readout"
                             font.pixelSize: 11
                             tone: "tertiary"
@@ -75,7 +77,7 @@ Rectangle {
                             height: parent.height
                             verticalAlignment: Text.AlignVCenter
                             horizontalAlignment: Text.AlignRight
-                            text: parent.parent.modelData.kind === "gap" ? "" : (parent.parent.modelData.newNo || "")
+                            text: d55.modelData.kind === "gap" ? "" : (d55.modelData.newNo || "")
                             role: "readout"
                             font.pixelSize: 11
                             tone: "tertiary"
@@ -85,20 +87,20 @@ Rectangle {
                             height: parent.height
                             verticalAlignment: Text.AlignVCenter
                             horizontalAlignment: Text.AlignHCenter
-                            text: parent.parent.modelData.kind === "added" ? "+" : parent.parent.modelData.kind === "removed" ? "−" : ""
+                            text: d55.modelData.kind === "added" ? "+" : d55.modelData.kind === "removed" ? "−" : ""
                             font: Theme.fCode
-                            color: parent.parent.modelData.kind === "added" ? Theme.diffAddText : Theme.diffRemoveText
+                            color: d55.modelData.kind === "added" ? Theme.diffAddText : Theme.diffRemoveText
                         }
                         Text {
                             height: parent.height
                             verticalAlignment: Text.AlignVCenter
-                            text: parent.parent.modelData.kind === "gap" ? "⋯" : parent.parent.modelData.text
+                            text: d55.modelData.kind === "gap" ? "⋯" : d55.modelData.text
                             font: Theme.fCode
                             textFormat: Text.PlainText
                             rightPadding: Theme.s3
-                            color: parent.parent.modelData.kind === "added" ? Theme.diffAddText
-                                 : parent.parent.modelData.kind === "removed" ? Theme.diffRemoveText
-                                 : parent.parent.modelData.kind === "gap" ? Theme.textTertiary : Theme.textPrimary
+                            color: d55.modelData.kind === "added" ? Theme.diffAddText
+                                 : d55.modelData.kind === "removed" ? Theme.diffRemoveText
+                                 : d55.modelData.kind === "gap" ? Theme.textTertiary : Theme.textPrimary
                         }
                     }
                 }
