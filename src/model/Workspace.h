@@ -82,6 +82,13 @@ public:
     ~Workspace() override;
 
     void start(const LaunchOptions &options);
+    // The configured default model ("provider/id", from modelRoles.default). A new session that
+    // starts on another model gets a notice saying so, since omp falls back silently.
+    void setExpectedModel(const QString &selector)
+    {
+        m_expectedModel = selector;
+        checkStartupModel();
+    }
 
     [[nodiscard]] QString name() const;
     [[nodiscard]] QString cwd() const { return m_cwd; }
@@ -220,6 +227,9 @@ private:
     QTimer m_errorTimer;
     qint64 m_charsThisWindow = 0;
     bool m_historyLoaded = false;
+    QString m_expectedModel;
+    bool m_checkModel = false;
+    void checkStartupModel();
 };
 
 } // namespace gomp

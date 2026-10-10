@@ -1,4 +1,5 @@
 #include "adapter/MockBackend.h"
+#include "model/ConversationModel.h"
 #include "model/Workspace.h"
 
 #include <QSignalSpy>
@@ -22,6 +23,27 @@ class TestMockBackend : public QObject
         return w;
     }
 private slots:
+    void noticesAFallbackFromTheDefaultModel()
+    {
+        MockBackend *b = nullptr;
+        auto *w = make(&b);
+        QTRY_COMPARE(w->connection(), Workspace::Connection::Ready);
+        const int before = w->conversation()->rowCount();
+        w->setExpectedModel(u"slowprovider/flash-model"_s); // config loaded after omp's first state
+        QCOMPARE(w->conversation()->rowCount(), before + 1);
+        const auto text = w->conversation()->data(w->conversation()->index(before), ConversationModel::TextRole).toString();
+        QVERIFY(text.contains(u"slowprovider/flash-model"_s));
+        w->setExpectedModel(u"other/model"_s); // only once per start
+        QCOMPARE(w->conversation()->rowCount(), before + 1);
+    }
+    void noFallbackNoticeWhenTheDefaultIsUsed()
+    {
+        MockBackend *b = nullptr;
+        auto *w = make(&b);
+        w->setExpectedModel(u"anthropic/claude-sonnet-5-5"_s); // known before omp's first state
+        QTRY_COMPARE(w->connection(), Workspace::Connection::Ready);
+        QCOMPARE(w->conversation()->rowCount(), 0);
+    }
     void streamsAnAnswer()
     {
         MockBackend *b = nullptr;

@@ -77,6 +77,18 @@ AppController *AppController::instance()
     return s_instance;
 }
 
+// modelRoles.default without a trailing thinking level ("provider/id:high" -> "provider/id"). Ids can
+// contain ':' themselves ("z-ai/glm-5.3-flash:batch"), so only known levels are stripped.
+QString AppController::defaultModelSelector() const
+{
+    auto selector = m_config->liveValue(u"modelRoles"_s).toObject().value("default"_L1).toString();
+    static const QStringList levels{u"off"_s, u"minimal"_s, u"low"_s, u"medium"_s, u"high"_s,
+                                    u"xhigh"_s, u"max"_s, u"auto"_s};
+    if (const auto colon = selector.lastIndexOf(u':'); colon > 0 && levels.contains(selector.mid(colon + 1)))
+        selector.truncate(colon);
+    return selector;
+}
+
 void AppController::wire()
 {
     m_workspaces->setFactories(
@@ -94,6 +106,8 @@ void AppController::wire()
         });
 
     connect(m_workspaces, &WorkspaceManager::workspaceAdded, this, [this](Workspace *w) {
+        if (!w->isMock())
+            w->setExpectedModel(defaultModelSelector());
         connect(w, &Workspace::attention, this,
                 [this, w](const QString &kind, const QString &title, const QString &body) { onAttention(w, kind, title, body); });
         connect(w, &Workspace::toast, this, &AppController::toast);
@@ -124,6 +138,12 @@ void AppController::wire()
         emit toast(ok ? u"info"_s : u"error"_s, message);
     });
     connect(m_config, &ConfigStore::loaded, m_palette, &PaletteModel::rebuild);
+    connect(m_config, &ConfigStore::loaded, this, [this] {
+        for (int i = 0; i < m_workspaces->rowCount(); ++i) {
+            if (auto *w = m_workspaces->at(i); w && !w->isMock())
+                w->setExpectedModel(defaultModelSelector());
+        }
+    });
     connect(m_notifier, &Notifier::activated, this, [this](const QString &key) {
         bool ok = false;
         const int idx = key.toInt(&ok);

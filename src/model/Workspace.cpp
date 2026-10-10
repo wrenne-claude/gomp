@@ -94,6 +94,7 @@ Workspace::~Workspace()
 void Workspace::start(const LaunchOptions &options)
 {
     m_launch = options;
+    m_checkModel = options.resumeSession.isEmpty() && !options.continueLatest && options.model.isEmpty();
     m_historyLoaded = options.resumeSession.isEmpty() && !options.continueLatest;
     setConnection(Connection::Starting);
     m_backend->start(options);
@@ -102,6 +103,28 @@ void Workspace::start(const LaunchOptions &options)
 QString Workspace::name() const
 {
     return QFileInfo(m_cwd).fileName().isEmpty() ? m_cwd : QFileInfo(m_cwd).fileName();
+}
+
+void Workspace::checkStartupModel()
+{
+    // Runs once both omp's first state and the configured default are known, in either order.
+    if (!m_checkModel || m_state.model.id.isEmpty() || m_expectedModel.isEmpty())
+        return;
+    m_checkModel = false;
+    // Only a fully qualified selector can be compared; a fuzzy one ("opus") is omp's to resolve.
+    const auto slash = m_expectedModel.indexOf(u'/');
+    if (slash <= 0)
+        return;
+    const auto provider = m_expectedModel.left(slash);
+    const auto id = m_expectedModel.mid(slash + 1);
+    if (m_state.model.provider.compare(provider, Qt::CaseInsensitive) == 0 && m_state.model.id == id)
+        return;
+    m_conversation->addNotice(
+        u"warning"_s,
+        u"omp started on %1 instead of your default model, %2, which it could not find. If that provider "
+        "lists its models from its endpoint, the list may not have loaded in time: raise discovery.timeoutMs "
+        "for it in ~/.omp/agent/models.yml, or pick a model from the header."_s
+            .arg(m_state.model.name.isEmpty() ? m_state.model.id : m_state.model.name, m_expectedModel));
 }
 
 double Workspace::turnSeconds() const
@@ -223,6 +246,7 @@ void Workspace::onEvent(const AgentEvent &event)
         }
         emit stateChanged();
         emit infoChanged();
+        checkStartupModel();
         if (sessionMoved)
             emit sessionChanged();
         recomputeActivity();

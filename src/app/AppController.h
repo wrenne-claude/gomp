@@ -121,6 +121,7 @@ protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
+    [[nodiscard]] QString defaultModelSelector() const;
     void wire();
     void onOmpReady();
     void onAttention(Workspace *w, const QString &kind, const QString &title, const QString &body);
