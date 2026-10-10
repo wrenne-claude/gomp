@@ -43,10 +43,9 @@ Rectangle {
             Layout.preferredHeight: 220
             Layout.alignment: Qt.AlignVCenter
             visible: first.width > 820
-            Corona {
+            GLogo {
                 anchors.centerIn: parent
                 size: 200
-                workspace: null
             }
         }
 

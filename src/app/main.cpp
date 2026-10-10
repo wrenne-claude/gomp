@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     QGuiApplication::setApplicationVersion(QStringLiteral(GOMP_VERSION));
     // Wayland app id: matches the .desktop file so the compositor finds the icon and name.
     QGuiApplication::setDesktopFileName(u"dev.gomp.Gomp"_s);
-    QGuiApplication::setWindowIcon(QIcon(u":/qt/qml/Gomp/icons/gomp-mark.svg"_s));
+    QGuiApplication::setWindowIcon(QIcon(u":/qt/qml/Gomp/brand/gomp.svg"_s));
 
     QCommandLineParser parser;
     parser.setApplicationDescription(u"A native flight deck for the omp coding agent."_s);

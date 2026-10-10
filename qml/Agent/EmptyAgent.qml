@@ -17,10 +17,11 @@ Item {
         anchors.centerIn: parent
         width: Math.min(520, parent.width - Theme.s6 * 2)
         spacing: Theme.s4
-        Corona {
+        GLogo {
             Layout.alignment: Qt.AlignHCenter
-            size: Theme.compact ? 96 : 160
-            workspace: null
+            Layout.preferredWidth: size
+            Layout.preferredHeight: size
+            size: Theme.compact ? 80 : 120
         }
         GText { Layout.alignment: Qt.AlignHCenter; text: qsTr("Open a project to start"); role: "title" }
         GText {

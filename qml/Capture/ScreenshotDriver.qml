@@ -63,7 +63,9 @@ Item {
         { name: "39-settings-staged", run: () => { App.settings.setValue("tools.approvalMode", "write"); App.settings.setValue("task.maxConcurrency", 6) }, then: 700 },
         { name: "40-settings-review", run: () => Ui.openOverlay("reviewSettings", {}), then: 900 },
         { name: "41-settings-search", run: () => { Ui.openOverlay("closeReview", {}); App.settings.discard(); Ui.openSettings("search:compaction") }, then: 900 },
-        { name: "42-settings-advanced", run: () => Ui.openSettings("advanced"), then: 900 }
+        { name: "42-settings-advanced", run: () => Ui.openSettings("advanced"), then: 900 },
+        { name: "50-no-project", run: () => { Ui.go("agent"); App.workspaces.close(0) }, until: () => App.workspaces.current === null, then: 700 },
+        { name: "51-first-run", run: () => Ui.previewFirstRun = true, then: 900 }
     ]
 
     // GOMP_SHOT_FILTER limits which states are saved; every step still runs to reach them.

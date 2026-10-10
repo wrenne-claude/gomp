@@ -5,7 +5,7 @@ import QtQuick.Dialogs
 import Gomp
 import Gomp.Core
 
-// Custom titlebar: mark, workspace tabs, palette launcher, window controls. Dragging moves the
+// Custom titlebar: logo, workspace tabs, activity Corona, palette launcher, window controls. Dragging moves the
 // window through the compositor (startSystemMove), so Wayland snapping and tiling keep working.
 Rectangle {
     id: bar
@@ -50,10 +50,9 @@ Rectangle {
         Item {
             implicitWidth: Theme.railWidth - Theme.s3 * 2 + 4
             implicitHeight: parent.height
-            Corona {
+            GLogo {
                 anchors.centerIn: parent
-                size: 22
-                workspace: App.workspaces.current
+                size: 20
             }
         }
 
@@ -64,6 +63,14 @@ Rectangle {
         }
 
         Item { Layout.fillWidth: true; Layout.fillHeight: true }
+
+        // The current workspace's activity, always visible whatever screen is open.
+        Corona {
+            Layout.rightMargin: Theme.s2
+            size: 20
+            visible: App.workspaces.current !== null
+            workspace: App.workspaces.current
+        }
 
         // Palette launcher: looks like a field because it opens one.
         Rectangle {

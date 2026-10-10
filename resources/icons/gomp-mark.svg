@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <!-- The Corona at rest: a ring broken at the upper right, with a tangent stroke leaving the gap. -->
-  <path d="M46.6 12.4A24 24 0 1 0 56 32" stroke="#FFB547" stroke-width="6" stroke-linecap="round"/>
-  <path d="M56 32H38" stroke="#FFB547" stroke-width="6" stroke-linecap="round"/>
-  <circle cx="32" cy="32" r="5" fill="#FFB547"/>
-</svg>

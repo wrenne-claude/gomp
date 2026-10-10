@@ -24,7 +24,7 @@ One memorable element, everything else quiet: the **Corona** (the activity visua
 ## Information architecture
 
 ```
-┌ Titlebar: mark │ workspace tabs …………………… Corona │ ⌘K │ — □ × ┐
+┌ Titlebar: logo │ workspace tabs …………………… Corona │ ⌘K │ — □ × ┐
 ├──────┬──────────────────────────────────────────┬────────────┤
 │ Rail │ Screen (Agent | Sessions | Subagents |   │ Inspector  │
 │      │         Settings)                        │ (Plan,     │
@@ -151,7 +151,7 @@ real adapter state:
 | error | brief radial shudder, then danger tint for 2s | last error |
 
 It appears at three sizes: 20px in the titlebar (always visible), 12px in workspace tabs, and
-160px in the empty Agent screen. Ambient light is a very low-alpha radial wash behind the
+large on a fresh session's empty conversation. Ambient light is a very low-alpha radial wash behind the
 conversation in the mode hue, using the same intensity curve. With *Reduce effects* the shader is
 swapped for a static SVG ring tinted by state.
 
@@ -178,8 +178,11 @@ content opacity, no hover) and, where applicable, loading states. Each sets `Acc
 ## Iconography
 One 20px grid SVG set with a 1.5px stroke, round caps and joins (`resources/icons`, 85 icons),
 recoloured by an image provider (`image://icons/<name>/<color>`) that rasterises at device pixel
-ratio, so there is no per-icon shader. No emoji, no mixed packs. The gomp mark is a ring broken at the
-upper-right (the Corona at rest) with a short tangent stroke, like a "g" that is also an orbit.
+ratio, so there is no per-icon shader. No emoji, no mixed packs. The gomp logo (`resources/brand/gomp.png`, with a pixel-exact SVG
+for the desktop icon) is 10x10 pixel art. It appears as the window icon, at the left of the
+titlebar, and on the first-run and "open a project" screens. `GLogo` scales it with nearest-neighbour
+sampling at multiples of 10px so the pixels stay square. The Corona stays a status display, never a
+logo.
 
 ## Screen inventory
 1. First run: locate omp, version check, install instructions, pick first project folder.

@@ -1,3 +1,5 @@
+<img src="resources/brand/gomp.svg" alt="" width="96">
+
 # gomp
 
 A native Qt 6 / QML desktop app for the [omp](https://github.com/can1357/oh-my-pi) coding agent:

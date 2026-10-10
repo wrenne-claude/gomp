@@ -96,7 +96,7 @@ Window {
 
     FirstRun {
         anchors.fill: parent
-        visible: App.needsFirstRun
+        visible: App.needsFirstRun || Ui.previewFirstRun
     }
 
     ToastHost {

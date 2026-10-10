@@ -14,6 +14,7 @@ QtObject {
     property string inspectorTab: "plan"
     property bool paletteOpen: false
     property bool shortcutsOpen: false
+    property bool previewFirstRun: false   // screenshot tour only
 
     signal toastRequested(string level, string message, string actionText, var action)
     signal openOverlay(string name, var props)

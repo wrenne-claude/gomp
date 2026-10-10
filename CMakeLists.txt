@@ -35,5 +35,5 @@ include(GNUInstallDirs)
 install(TARGETS gomp RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES packaging/dev.gomp.Gomp.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
 install(FILES packaging/dev.gomp.Gomp.metainfo.xml DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo)
-install(FILES resources/icons/gomp-mark.svg
+install(FILES resources/brand/gomp.svg
         DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps RENAME dev.gomp.Gomp.svg)
