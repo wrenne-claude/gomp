@@ -30,6 +30,8 @@ public:
     void setProjectDir(const QString &dir);
     [[nodiscard]] QString projectDir() const { return m_projectDir; }
     void reload();
+    // Demo mode: read real files for display, never write them.
+    void setDemo(bool demo) { m_demo = demo; }
     [[nodiscard]] bool isLoaded() const { return m_loaded; }
 
     [[nodiscard]] QJsonValue liveValue(const QString &id) const;    // effective per omp (defaults applied)
@@ -99,6 +101,7 @@ private:
     QList<Staged> m_staged;
     bool m_loaded = false;
     bool m_applying = false;
+    bool m_demo = false;
     QFileSystemWatcher m_watcher;
     QTimer m_reloadDebounce;
 };

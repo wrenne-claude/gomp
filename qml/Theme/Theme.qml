@@ -178,7 +178,7 @@ QtObject {
     // Ligatures off: code should show the characters the agent wrote.
     readonly property font fCode: Qt.font({ family: monoFamily, pixelSize: 13, weight: Font.Normal, features: { "calt": 0, "liga": 0 } })
     readonly property font fCodeSmall: Qt.font({ family: monoFamily, pixelSize: 12, weight: Font.Normal, features: { "calt": 0, "liga": 0 } })
-    readonly property real lhBody: 1.5
+    readonly property real lhBody: 1.4
     readonly property real lhCode: 1.54
 
     // ---- Motion -----------------------------------------------------------------------------------

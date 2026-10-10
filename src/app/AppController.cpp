@@ -16,6 +16,10 @@
 #include <QStyleHints>
 #include <QUrl>
 #include <QUuid>
+#include <QJSEngine>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 Q_LOGGING_CATEGORY(lcApp, "gomp.app")
 
@@ -150,6 +154,10 @@ void AppController::start()
         MockBackend::writeDemoSessions(demo);
         m_sessions->setRoot(demo);
         m_sessions->rescan();
+        m_config->setDemo(true);
+        m_mcp->setDemo(true);
+        m_config->reload();
+        m_providers->load({});
         m_models->setModels(MockBackend::sampleModels());
         openDemo();
         return;
@@ -216,6 +224,9 @@ void AppController::enterDemoMode()
     MockBackend::writeDemoSessions(demo);
     m_sessions->setRoot(demo);
     m_sessions->rescan();
+    m_config->setDemo(true);
+    m_mcp->setDemo(true);
+    m_config->reload();
     emit needsFirstRunChanged();
     m_models->setModels(MockBackend::sampleModels());
     openDemo();
@@ -369,6 +380,57 @@ bool AppController::isDirectory(const QString &path) const
 QString AppController::homePath() const
 {
     return QDir::homePath();
+}
+
+void AppController::ompJson(const QStringList &args, const QJSValue &callback)
+{
+    auto cb = callback;
+    auto *engine = qjsEngine(this);
+    if (m_mock) {
+        QJsonDocument doc;
+        if (args.value(0) == "plugin"_L1) {
+            doc = QJsonDocument(QJsonObject{
+                {"npm"_L1, QJsonArray{QJsonObject{{"name"_L1, u"@omp/plugin-github"_s}, {"version"_L1, u"2.3.0"_s}, {"enabled"_L1, true},
+                                                  {"description"_L1, u"Pull requests, issues and checks as tools"_s}},
+                                      QJsonObject{{"name"_L1, u"@omp/plugin-sentry"_s}, {"version"_L1, u"0.8.1"_s}, {"enabled"_L1, false},
+                                                  {"description"_L1, u"Read Sentry issues and stack traces"_s}}}},
+                {"marketplace"_L1, QJsonArray{}}});
+        } else if (args.value(0) == "skill"_L1) {
+            doc = QJsonDocument(QJsonObject{
+                {"skills"_L1, QJsonArray{QJsonObject{{"name"_L1, u"pdf-tools"_s}, {"version"_L1, u"1.4.0"_s},
+                                                     {"description"_L1, u"Extract text and tables from PDFs"_s}},
+                                         QJsonObject{{"name"_L1, u"release-notes"_s}, {"version"_L1, u"0.3.2"_s},
+                                                     {"description"_L1, u"Draft release notes from merged pull requests"_s}}}},
+                {"warnings"_L1, QJsonArray{}}});
+        }
+        QMetaObject::invokeMethod(this, [cb, doc, engine]() mutable {
+            if (cb.isCallable() && engine)
+                cb.call({true, engine->toScriptValue(doc.isObject() ? doc.object().toVariantMap() : QVariantMap{}), QString{}});
+        }, Qt::QueuedConnection);
+        return;
+    }
+    m_cli->runJson(args, [cb, engine](bool ok, const QJsonDocument &doc, const QString &error) mutable {
+        if (!cb.isCallable() || !engine)
+            return;
+        const QVariant data = doc.isArray() ? QVariant(doc.array().toVariantList()) : QVariant(doc.object().toVariantMap());
+        cb.call({ok, engine->toScriptValue(data), error});
+    });
+}
+
+void AppController::ompRun(const QStringList &args, const QJSValue &callback)
+{
+    auto cb = callback;
+    if (m_mock) {
+        QMetaObject::invokeMethod(this, [cb]() mutable {
+            if (cb.isCallable())
+                cb.call({true, u"Done (demo mode: nothing was changed)."_s});
+        }, Qt::QueuedConnection);
+        return;
+    }
+    m_cli->run(args, [cb](bool ok, const QString &out, const QString &err) mutable {
+        if (cb.isCallable())
+            cb.call({ok, (ok ? out : err).trimmed()});
+    });
 }
 
 QString AppController::pasteImage() const

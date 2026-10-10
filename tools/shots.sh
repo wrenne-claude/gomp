@@ -11,4 +11,4 @@ fi
 mkdir -p screenshots
 GOMP_SHOT_FILTER="$1" WAYLAND_DISPLAY="$SOCK" QT_QPA_PLATFORM=wayland \
 QT_LOGGING_RULES="*.debug=false;qml.debug=true;js.debug=true;qt.qpa.services=false" QT_FORCE_STDERR_LOGGING=1 \
-    timeout 180 ./build/gomp --screenshots "$PWD/screenshots" 2>&1 | grep -v '^qml: saved' || true
+    timeout 600 ./build/gomp --screenshots "$PWD/screenshots" 2>&1 | grep -v '^qml: saved' || true

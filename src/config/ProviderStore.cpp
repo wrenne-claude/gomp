@@ -78,6 +78,16 @@ void ProviderStore::load(const QStringList &storedEnvKeys)
     readModels();
     m_cli->run({u"--help"_s}, [this](bool, const QString &out, const QString &) {
         m_envVars = parseEnvHelp(out);
+        // Without omp (demo mode, or an omp that changed its help text) show the major providers.
+        if (m_envVars.isEmpty()) {
+            m_envVars = {{u"ANTHROPIC_API_KEY"_s, u"Anthropic Claude models"_s},
+                         {u"OPENAI_API_KEY"_s, u"OpenAI GPT models"_s},
+                         {u"GEMINI_API_KEY"_s, u"Google Gemini models"_s},
+                         {u"OPENROUTER_API_KEY"_s, u"OpenRouter aggregated models"_s},
+                         {u"XAI_API_KEY"_s, u"xAI Grok models"_s},
+                         {u"MISTRAL_API_KEY"_s, u"Mistral models"_s},
+                         {u"GROQ_API_KEY"_s, u"Groq models"_s}};
+        }
         emit changed();
     });
     m_pendingLookups = int(storedEnvKeys.size());

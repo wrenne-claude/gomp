@@ -133,6 +133,8 @@ QString McpStore::writeFile(const QString &scope, const QJsonObject &root)
     const auto p = path(scope);
     if (p.isEmpty())
         return u"Open a project to add project servers."_s;
+    if (m_demo)
+        return u"Demo mode: mcp.json is not written."_s;
     if (ConfigStore::backupFile(p).isEmpty())
         return u"Could not back up %1; nothing was changed."_s.arg(p);
     QDir().mkpath(QFileInfo(p).absolutePath());

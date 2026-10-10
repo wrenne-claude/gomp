@@ -70,6 +70,7 @@ public:
     Q_INVOKABLE void resetValue(const QString &id);
     Q_INVOKABLE void unstage(const QString &id);
     Q_INVOKABLE QVariant value(const QString &id) const;
+    Q_INVOKABLE QStringList idsWithPrefix(const QStringList &prefixes, const QStringList &exclude = {}) const;
     Q_INVOKABLE QVariantMap describe(const QString &id) const;
     Q_INVOKABLE bool isOverridden(const QString &id) const;
     Q_INVOKABLE QVariantList preview() const;

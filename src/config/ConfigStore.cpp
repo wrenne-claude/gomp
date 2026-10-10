@@ -103,6 +103,12 @@ void ConfigStore::readFiles()
 void ConfigStore::reload()
 {
     readFiles();
+    if (m_demo) {
+        m_loaded = true; // values fall back to the schema defaults
+        emit loaded();
+        emit valuesChanged();
+        return;
+    }
     // Run in an empty directory so no project overlay leaks into the "global" view.
     auto tmp = std::make_shared<QTemporaryDir>();
     m_cli->runJson(
@@ -360,6 +366,13 @@ void ConfigStore::applyStaged()
 {
     if (m_staged.isEmpty() || m_applying)
         return;
+    if (m_demo) {
+        m_staged.clear();
+        emit stagedChanged();
+        emit valuesChanged();
+        emit applied(true, u"Demo mode: the change was previewed, but no file was written."_s);
+        return;
+    }
     m_applying = true;
     QList<Staged> global;
     QList<Staged> project;
@@ -486,6 +499,10 @@ QStringList ConfigStore::validateRaw(const QString &text) const
 
 bool ConfigStore::writeRaw(Scope scope, const QString &text, QString *error)
 {
+    if (m_demo) {
+        *error = u"Demo mode: files are not written."_s;
+        return false;
+    }
     const auto problems = validateRaw(text);
     if (!problems.isEmpty()) {
         *error = problems.join(u'\n');

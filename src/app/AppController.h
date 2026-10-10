@@ -105,6 +105,9 @@ public:
     Q_INVOKABLE bool isDirectory(const QString &path) const;
     Q_INVOKABLE QString homePath() const;
     Q_INVOKABLE QString pasteImage() const; // saves a clipboard image to a temp file, returns its path
+    // Runs `omp <args>` and calls back with (ok, parsedJson, error). Demo mode answers from samples.
+    Q_INVOKABLE void ompJson(const QStringList &args, const QJSValue &callback);
+    Q_INVOKABLE void ompRun(const QStringList &args, const QJSValue &callback);
 
 signals:
     void mockModeChanged();

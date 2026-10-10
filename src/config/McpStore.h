@@ -21,6 +21,7 @@ public:
     explicit McpStore(QObject *parent = nullptr);
 
     void setProjectDir(const QString &dir);
+    void setDemo(bool demo) { m_demo = demo; }
     [[nodiscard]] QVariantList servers() const { return m_servers; }
 
     // Returns an empty string on success, else a message for the form.
@@ -42,6 +43,7 @@ private:
     QString writeFile(const QString &scope, const QJsonObject &root);
 
     QString m_projectDir;
+    bool m_demo = false;
     QVariantList m_servers;
     QFileSystemWatcher m_watcher;
 };

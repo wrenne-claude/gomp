@@ -163,6 +163,12 @@ void SettingsModel::refilter()
             if (ok)
                 m_rows << i;
         }
+        // Keep each group contiguous so section headers are not repeated.
+        std::stable_sort(m_rows.begin(), m_rows.end(), [&all](qsizetype a, qsizetype b) {
+            const auto ga = all.at(a).group.isEmpty() ? SettingsSchema::tabTitle(all.at(a).tab) : all.at(a).group;
+            const auto gb = all.at(b).group.isEmpty() ? SettingsSchema::tabTitle(all.at(b).tab) : all.at(b).group;
+            return ga < gb;
+        });
     } else if (!m_ids.isEmpty()) {
         for (const auto &id : m_ids) {
             for (qsizetype i = 0; i < all.size(); ++i) {
@@ -261,6 +267,22 @@ void SettingsModel::unstage(const QString &id)
 QVariant SettingsModel::value(const QString &id) const
 {
     return m_store->scopedValue(id, m_scope).toVariant();
+}
+
+QStringList SettingsModel::idsWithPrefix(const QStringList &prefixes, const QStringList &exclude) const
+{
+    QStringList out;
+    for (const auto &d : m_schema->settings()) {
+        if (exclude.contains(d.id))
+            continue;
+        for (const auto &p : prefixes) {
+            if (d.id == p || d.id.startsWith(p)) {
+                out << d.id;
+                break;
+            }
+        }
+    }
+    return out;
 }
 
 QVariantMap SettingsModel::describe(const QString &id) const
