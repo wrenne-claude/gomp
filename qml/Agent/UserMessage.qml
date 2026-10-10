@@ -44,7 +44,7 @@ Item {
             }
             RowLayout {
                 spacing: Theme.s2
-                GBadge { visible: msg.imageCount > 0; iconName: "image"; text: qsTr("%n image(s)", "", msg.imageCount) }
+                GBadge { visible: msg.imageCount > 0; iconName: "image"; text: Fmt.count(msg.imageCount, qsTr("image"), qsTr("images")) }
                 GText { text: Fmt.relativeTime(msg.timestamp); role: "caption"; tone: "tertiary" }
                 Item { Layout.fillWidth: true }
                 Row {

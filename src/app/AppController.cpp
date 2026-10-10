@@ -145,6 +145,11 @@ void AppController::start()
         return;
     m_started = true;
     if (m_mock) {
+        const auto demo = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + u"/gomp-demo-sessions"_s;
+        QDir(demo).removeRecursively();
+        MockBackend::writeDemoSessions(demo);
+        m_sessions->setRoot(demo);
+        m_sessions->rescan();
         m_models->setModels(MockBackend::sampleModels());
         openDemo();
         return;
@@ -206,6 +211,11 @@ void AppController::enterDemoMode()
 {
     m_mock = true;
     emit mockModeChanged();
+    const auto demo = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + u"/gomp-demo-sessions"_s;
+    QDir(demo).removeRecursively();
+    MockBackend::writeDemoSessions(demo);
+    m_sessions->setRoot(demo);
+    m_sessions->rescan();
     emit needsFirstRunChanged();
     m_models->setModels(MockBackend::sampleModels());
     openDemo();

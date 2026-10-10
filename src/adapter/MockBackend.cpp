@@ -7,6 +7,8 @@
 #include <QFile>
 #include <QJsonDocument>
 #include <QRandomGenerator>
+#include <QRegularExpression>
+#include <QStandardPaths>
 
 using namespace Qt::StringLiterals;
 
@@ -100,6 +102,43 @@ QJsonArray MockBackend::sampleModels()
         out.append(m);
     }
     return out;
+}
+
+void MockBackend::writeDemoSessions(const QString &dir)
+{
+    static const QRegularExpression stamp(uR"(\{\{T(?:-(\d+))?\}\})"_s);
+    const auto now = QDateTime::currentDateTimeUtc();
+    for (const auto &name : QDir(u":/gomp/mock/sessions"_s).entryList({u"*.jsonl"_s})) {
+        QFile in(u":/gomp/mock/sessions/"_s + name);
+        if (!in.open(QIODevice::ReadOnly))
+            continue;
+        QString text = QString::fromUtf8(in.readAll());
+        qint64 newest = -1;
+        QString out;
+        qsizetype last = 0;
+        auto it = stamp.globalMatch(text);
+        while (it.hasNext()) {
+            const auto m = it.next();
+            const qint64 ago = m.captured(1).toLongLong();
+            if (!m.captured(1).isEmpty()) // bare {{T}} marks bookkeeping times, not activity
+                newest = newest < 0 ? ago : std::min(newest, ago);
+            out += QStringView(text).mid(last, m.capturedStart() - last);
+            out += now.addSecs(-ago).toString(Qt::ISODateWithMs);
+            last = m.capturedEnd();
+        }
+        out += QStringView(text).mid(last);
+        // The cwd slug directory mirrors omp's layout: one folder per project.
+        const auto cwd = QJsonDocument::fromJson(out.section(u'\n', 1, 1).toUtf8()).object().value("cwd"_L1).toString();
+        const auto slug = QString(cwd).replace(u'/', u'-');
+        QDir().mkpath(dir + u'/' + slug);
+        QFile f(dir + u'/' + slug + u'/' + name);
+        if (!f.open(QIODevice::WriteOnly))
+            continue;
+        f.write(out.toUtf8());
+        f.close();
+        if (f.open(QIODevice::ReadWrite))
+            f.setFileTime(QDateTime::currentDateTime().addSecs(-std::max<qint64>(newest, 0)), QFileDevice::FileModificationTime);
+    }
 }
 
 MockBackend::MockBackend(QObject *parent)

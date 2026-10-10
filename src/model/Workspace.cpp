@@ -683,6 +683,22 @@ void Workspace::fork()
     });
 }
 
+void Workspace::branchAt(const QString &entryId)
+{
+    m_backend->call(u"branch"_s, {{"entryId"_L1, entryId}}, [this](bool ok, const QJsonValue &data, const QString &error) {
+        if (!ok) {
+            emit toast(u"error"_s, u"Could not branch: %1"_s.arg(error));
+            return;
+        }
+        // omp returns the branched user message so it can be edited before resending.
+        const auto text = data.toObject().value("text"_L1).toString();
+        emit toast(u"info"_s, u"Branched. The conversation continues from that message."_s);
+        loadHistory();
+        if (!text.isEmpty())
+            emit branchTextReady(text);
+    });
+}
+
 void Workspace::newSession()
 {
     m_backend->call(u"new_session"_s, {}, [this](bool ok, const QJsonValue &, const QString &error) {

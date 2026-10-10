@@ -20,4 +20,9 @@ T.Popup {
     }
     exit: Transition { NumberAnimation { property: "opacity"; to: 0; duration: Theme.dFast * 0.75; easing.type: Theme.easeIn } }
     background: GFloating { level: 2 }
+    // Popovers belong to the screen that opened them.
+    Connections {
+        target: Ui
+        function onScreenChanged() { pop.close() }
+    }
 }

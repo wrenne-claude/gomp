@@ -66,6 +66,10 @@ Item {
     }
 
     Connections {
+        target: composer.workspace
+        function onBranchTextReady(text) { input.text = text; input.cursorPosition = text.length; input.forceActiveFocus() }
+    }
+    Connections {
         target: Ui
         function onFocusComposer() { input.forceActiveFocus() }
         function onOpenOverlay(name, props) {

@@ -40,6 +40,12 @@ QString Format::pricePerMTok(double usd)
     return u"$"_s + QString::number(usd, 'f', whole ? 0 : 2);
 }
 
+QString Format::count(double n, const QString &singular, const QString &plural)
+{
+    const auto whole = qint64(std::llround(n));
+    return QLocale().toString(whole) + u' ' + (whole == 1 ? singular : plural);
+}
+
 QString Format::duration(double ms)
 {
     if (ms < 1000)

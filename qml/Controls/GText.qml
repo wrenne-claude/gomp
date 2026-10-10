@@ -24,7 +24,8 @@ Text {
          : tone === "disabled" ? Theme.textDisabled
          : tone === "onAccent" ? Theme.onAccent
          : Theme.textPrimary
-    lineHeight: role === "body" || role === "strong" ? Theme.lhBody : 1.0
+    // Body line height only matters when text wraps; single-line labels stay optically centred.
+    lineHeight: (role === "body" || role === "strong") && wrapMode !== Text.NoWrap ? Theme.lhBody : 1.0
     textFormat: Text.PlainText
     renderType: Text.NativeRendering
     elide: Text.ElideRight

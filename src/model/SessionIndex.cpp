@@ -4,7 +4,6 @@
 #include "util/Markdown.h"
 
 #include <QDir>
-#include <QDirIterator>
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonArray>
@@ -46,8 +45,10 @@ SessionIndex::SessionIndex(OmpCli *cli, QObject *parent)
     });
 }
 
-QString SessionIndex::sessionsRoot()
+QString SessionIndex::sessionsRoot() const
 {
+    if (!m_root.isEmpty())
+        return m_root;
     const auto env = qEnvironmentVariable("PI_CODING_AGENT_DIR");
     if (!env.isEmpty())
         return env + u"/sessions"_s;
@@ -149,12 +150,13 @@ void SessionIndex::rescan()
     const auto root = sessionsRoot();
     m_watcher.setFuture(QtConcurrent::run([root, cache] {
         QList<SessionInfo> out;
-        QDirIterator it(root, {u"*.jsonl"_s}, QDir::Files, QDirIterator::Subdirectories);
-        while (it.hasNext()) {
-            const auto path = it.next();
-            // Subagent transcripts live in nested folders of their parent session; skip them.
-            if (QDir(root).relativeFilePath(path).count(u'/') != 1)
-                continue;
+        // omp's layout is <root>/<cwd-slug>/<timestamp>_<id>.jsonl; subagent transcripts sit in
+        // deeper folders and are not sessions of their own.
+        const auto projects = QDir(root).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+        for (const auto &projectDir : projects) {
+          const auto files = QDir(projectDir.absoluteFilePath()).entryInfoList({u"*.jsonl"_s}, QDir::Files);
+          for (const auto &file : files) {
+            const auto path = file.absoluteFilePath();
             const QFileInfo fi(path);
             const qint64 key = fi.lastModified().toMSecsSinceEpoch() ^ (fi.size() << 20);
             const auto cached = cache.constFind(path);
@@ -165,6 +167,7 @@ void SessionIndex::rescan()
             auto info = scanFile(path);
             if (info.messages > 0)
                 out << info;
+          }
         }
         return out;
     }));
@@ -259,6 +262,15 @@ QVariantMap SessionIndex::get(const QString &path) const
         for (auto it = names.cbegin(); it != names.cend(); ++it)
             out.insert(QString::fromUtf8(it.value()), data(index(i), it.key()));
         return out;
+    }
+    return {};
+}
+
+QString SessionIndex::findByTitle(const QString &title) const
+{
+    for (const auto &s : m_sessions) {
+        if (s.title == title)
+            return s.path;
     }
     return {};
 }

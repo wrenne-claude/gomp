@@ -115,7 +115,6 @@ T.ComboBox {
         exit: Transition { NumberAnimation { property: "opacity"; to: 0; duration: Theme.dFast * 0.75 } }
         contentItem: Column {
             spacing: Theme.s1
-            implicitHeight: (filterField.visible ? filterField.height + Theme.s1 : 0) + list.contentHeight
             GSearchField {
                 id: filterField
                 width: parent.width

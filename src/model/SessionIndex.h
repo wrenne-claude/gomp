@@ -67,11 +67,13 @@ public:
     [[nodiscard]] QStringList projects() const;
     Q_INVOKABLE void rescan();
     Q_INVOKABLE QVariantMap get(const QString &path) const;
+    Q_INVOKABLE QString findByTitle(const QString &title) const;
     Q_INVOKABLE bool remove(const QString &path);
     Q_INVOKABLE bool rename(const QString &path, const QString &title);
     Q_INVOKABLE void exportHtml(const QString &path);
 
-    [[nodiscard]] static QString sessionsRoot();
+    [[nodiscard]] QString sessionsRoot() const;
+    void setRoot(const QString &root) { m_root = root; }
     // Parses one session file; public for tests.
     static SessionInfo scanFile(const QString &path);
     // Rewrites the padded first-line title in place; false if the file has no padded title line.
@@ -88,6 +90,7 @@ private:
     QHash<QString, QPair<qint64, SessionInfo>> m_cache; // path -> (mtime+size key, info)
     QFutureWatcher<QList<SessionInfo>> m_watcher;
     OmpCli *m_cli;
+    QString m_root;
 };
 
 // Search, project filter and sort over SessionIndex for the session browser.

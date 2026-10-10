@@ -37,7 +37,7 @@ Row {
     GText {
         anchors.verticalCenter: parent.verticalCenter
         visible: line.workspace && line.workspace.queuedMessages.length > 0
-        text: line.workspace ? qsTr("%n queued", "", line.workspace.queuedMessages.length) : ""
+        text: line.workspace ? qsTr("%1 queued").arg(line.workspace.queuedMessages.length) : ""
         role: "caption"
         tone: "tertiary"
     }

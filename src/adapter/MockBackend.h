@@ -42,6 +42,8 @@ public:
     [[nodiscard]] static QStringList scenarioNames();
     // Sample catalog in `omp models --json` shape, used when no omp binary is available.
     [[nodiscard]] static QJsonArray sampleModels();
+    // Copies the demo session transcripts into <dir>/<project>/ with timestamps relative to now.
+    static void writeDemoSessions(const QString &dir);
 
 private:
     struct Step {

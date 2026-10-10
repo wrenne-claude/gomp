@@ -27,7 +27,8 @@ QHash<int, QByteArray> SessionTreeModel::roleNames() const
 {
     return {{EntryIdRole, "entryId"}, {KindRole, "kind"},           {TextRole, "text"},
             {TimestampRole, "timestamp"}, {LaneRole, "lane"},       {ParentRowRole, "parentRow"},
-            {ParentLaneRole, "parentLane"}, {ActiveRole, "active"}, {ForkRole, "fork"}};
+            {ParentLaneRole, "parentLane"}, {ActiveRole, "active"}, {ForkRole, "fork"},
+            {ThroughRole, "through"}, {ContinuesRole, "continues"}};
 }
 
 QVariant SessionTreeModel::data(const QModelIndex &index, int role) const
@@ -54,6 +55,14 @@ QVariant SessionTreeModel::data(const QModelIndex &index, int role) const
         return n.active;
     case ForkRole:
         return n.fork;
+    case ThroughRole: {
+        QVariantList lanes;
+        for (const int l : n.through)
+            lanes << l;
+        return lanes;
+    }
+    case ContinuesRole:
+        return n.continues;
     default:
         return {};
     }
@@ -180,6 +189,18 @@ QList<SessionTreeModel::Node> SessionTreeModel::layout(const QByteArray &jsonl, 
             ++*branches;
         }
         continuedFrom.insert(n.parentId, 1);
+    }
+    // Connectors: a child's line runs from its parent's row down to it on the child's lane.
+    for (qsizetype i = 0; i < nodes.size(); ++i) {
+        const auto &n = nodes.at(i);
+        if (n.parentRow < 0)
+            continue;
+        if (n.parentLane == n.lane)
+            nodes[n.parentRow].continues = true;
+        for (qsizetype r = n.parentRow + 1; r < i; ++r) {
+            if (!nodes[r].through.contains(n.lane) && nodes[r].lane != n.lane)
+                nodes[r].through << n.lane;
+        }
     }
     *lanes = nextLane;
     return nodes;

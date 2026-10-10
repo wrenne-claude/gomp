@@ -21,7 +21,7 @@ GPopover {
             id: search
             Layout.fillWidth: true
             Layout.margins: Theme.s3
-            placeholderText: qsTr("Search %n models", "", App.models.total)
+            placeholderText: qsTr("Search %1").arg(Fmt.count(App.models.total, qsTr("model"), qsTr("models")))
             onTextChanged: { App.models.query = text; list.currentIndex = 0 }
             Keys.onDownPressed: list.currentIndex = Math.min(list.count - 1, list.currentIndex + 1)
             Keys.onUpPressed: list.currentIndex = Math.max(0, list.currentIndex - 1)

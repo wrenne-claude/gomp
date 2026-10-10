@@ -17,7 +17,7 @@ class SessionTreeModel : public QAbstractListModel
     Q_PROPERTY(int branchCount READ branchCount NOTIFY loaded)
     Q_PROPERTY(int count READ rowCount NOTIFY loaded)
 public:
-    enum Role { EntryIdRole = Qt::UserRole + 1, KindRole, TextRole, TimestampRole, LaneRole, ParentRowRole, ParentLaneRole, ActiveRole, ForkRole };
+    enum Role { EntryIdRole = Qt::UserRole + 1, KindRole, TextRole, TimestampRole, LaneRole, ParentRowRole, ParentLaneRole, ActiveRole, ForkRole, ThroughRole, ContinuesRole };
 
     explicit SessionTreeModel(QObject *parent = nullptr);
 
@@ -41,6 +41,8 @@ public:
         int parentLane = -1;
         bool active = false;
         bool fork = false; // has more than one child
+        QList<int> through; // lanes that pass this row on their way to a later node
+        bool continues = false; // a later node continues this node's lane
     };
     // Builds the laid-out nodes from JSONL text; public for tests.
     static QList<Node> layout(const QByteArray &jsonl, int *lanes, int *branches);

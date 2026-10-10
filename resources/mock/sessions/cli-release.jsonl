@@ -1,0 +1,5 @@
+{"type":"title","v":1,"title":"Release 0.9 changelog","source":"auto","updatedAt":"{{T}}","pad":"                                                                                                                                                            "}
+{"type":"session","version":3,"id":"01a0demo-0005","timestamp":"{{T-518400}}","cwd":"/home/dev/Projects/cli"}
+{"type":"model_change","id":"m0","parentId":null,"timestamp":"{{T-518400}}","model":"anthropic/claude-sonnet-5-5"}
+{"type":"message","id":"u1","parentId":"m0","timestamp":"{{T-518400}}","message":{"role":"user","content":[{"type":"text","text":"Write the changelog for 0.9 from the merged PRs"}],"timestamp":0}}
+{"type":"message","id":"a1","parentId":"u1","timestamp":"{{T-518200}}","message":{"role":"assistant","content":[{"type":"text","text":"Changelog drafted with 14 entries grouped into Added, Changed and Fixed."}],"timestamp":0,"provider":"anthropic","model":"claude-sonnet-5-5","stopReason":"stop"}}

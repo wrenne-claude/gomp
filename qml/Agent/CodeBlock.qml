@@ -33,7 +33,7 @@ Rectangle {
             tone: "tertiary"
         }
         GText {
-            text: qsTr("%n lines", "", block.lineCount)
+            text: Fmt.count(block.lineCount, qsTr("line"), qsTr("lines"))
             role: "caption"
             tone: "tertiary"
             visible: block.lineCount > 3

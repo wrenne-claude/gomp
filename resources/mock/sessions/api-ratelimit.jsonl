@@ -1,0 +1,7 @@
+{"type":"title","v":1,"title":"Fix token bucket refill","source":"auto","updatedAt":"{{T}}","pad":"                                                                                                                                                          "}
+{"type":"session","version":3,"id":"01a0demo-0001","timestamp":"{{T-2400}}","cwd":"/home/dev/Projects/api"}
+{"type":"model_change","id":"m0","parentId":null,"timestamp":"{{T-2400}}","model":"anthropic/claude-sonnet-5-5"}
+{"type":"message","id":"u1","parentId":"m0","timestamp":"{{T-2400}}","message":{"role":"user","content":[{"type":"text","text":"The rate limiter test fails with 11 tokens after one interval"}],"timestamp":0}}
+{"type":"message","id":"a1","parentId":"u1","timestamp":"{{T-2340}}","message":{"role":"assistant","content":[{"type":"text","text":"`Math.ceil` rounds partial intervals up. Switching to `Math.floor` and advancing `lastRefill` by whole intervals fixes it; all 8 tests pass."}],"timestamp":0,"provider":"anthropic","model":"claude-sonnet-5-5","stopReason":"stop"}}
+{"type":"message","id":"u2","parentId":"a1","timestamp":"{{T-2280}}","message":{"role":"user","content":[{"type":"text","text":"Add a test for a refill that spans three intervals"}],"timestamp":0}}
+{"type":"message","id":"a2","parentId":"u2","timestamp":"{{T-2220}}","message":{"role":"assistant","content":[{"type":"text","text":"Added `refills across several intervals` to test/rateLimit.test.ts."}],"timestamp":0,"provider":"anthropic","model":"claude-sonnet-5-5","stopReason":"stop"}}

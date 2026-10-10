@@ -1,0 +1,5 @@
+{"type":"title","v":1,"title":"Deprecate the --legacy flag","source":"auto","updatedAt":"{{T}}","pad":"                                                                                                                                                      "}
+{"type":"session","version":3,"id":"01a0demo-0006","timestamp":"{{T-1728000}}","cwd":"/home/dev/Projects/cli"}
+{"type":"model_change","id":"m0","parentId":null,"timestamp":"{{T-1728000}}","model":"google/gemini-3-pro"}
+{"type":"message","id":"u1","parentId":"m0","timestamp":"{{T-1728000}}","message":{"role":"user","content":[{"type":"text","text":"Deprecate --legacy with a warning for one release"}],"timestamp":0}}
+{"type":"message","id":"a1","parentId":"u1","timestamp":"{{T-1727850}}","message":{"role":"assistant","content":[{"type":"text","text":"--legacy now prints a deprecation warning and maps to --compat."}],"timestamp":0,"provider":"google","model":"gemini-3-pro","stopReason":"stop"}}

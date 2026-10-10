@@ -91,7 +91,7 @@ Item {
                         color: Theme.textSecondary
                         elide: Text.ElideMiddle
                     }
-                    GBadge { visible: card.subagentCount > 0; iconName: "nodes"; text: qsTr("%n agents", "", card.subagentCount); tone: "accent" }
+                    GBadge { visible: card.subagentCount > 0; iconName: "nodes"; text: Fmt.count(card.subagentCount, qsTr("agent"), qsTr("agents")); tone: "accent" }
                     GText {
                         visible: card.hasDiff
                         text: "+" + card.diffAdded

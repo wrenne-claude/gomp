@@ -157,6 +157,7 @@ public:
     Q_INVOKABLE void compact(const QString &instructions = {});
     Q_INVOKABLE void rename(const QString &title);
     Q_INVOKABLE void fork();
+    Q_INVOKABLE void branchAt(const QString &entryId);
     Q_INVOKABLE void newSession();
     Q_INVOKABLE void exportHtml(const QString &path);
     Q_INVOKABLE void cancelSubagent(const QString &id);
@@ -178,6 +179,7 @@ signals:
     // Something the user should look at; the app notifies when the window is unfocused.
     void attention(const QString &kind, const QString &title, const QString &body);
     void sessionChanged();
+    void branchTextReady(const QString &text);
 
 private:
     void onEvent(const AgentEvent &event);

@@ -108,7 +108,8 @@ QString plainPreview(const QString &markdown, int maxChars)
 {
     static const QRegularExpression fences(u"```[\\s\\S]*?(```|$)"_s);
     static const QRegularExpression links(u"\\[([^\\]]*)\\]\\([^)]*\\)"_s);
-    static const QRegularExpression marks(u"[*_`#>]+"_s);
+    // Emphasis pairs, code ticks and line-leading markers only: single * and _ are content.
+    static const QRegularExpression marks(uR"((\*\*|__|`|^#+\s|^>\s))"_s, QRegularExpression::MultilineOption);
     static const QRegularExpression spaces(u"\\s+"_s);
     QString s = markdown;
     s.replace(fences, u" "_s);

@@ -161,17 +161,18 @@ QtObject {
     readonly property int rLg: 12
     readonly property int rXl: 16
 
-    // ---- Type -------------------------------------------------------------------------------------
+    // ---- Type ----
+    // Ligatures are off throughout: Barlow joins "--" into a dash, which corrupts flags and paths.---------------------------------------------------------------------------------
     readonly property string uiFamily: "Barlow"
     readonly property string readoutFamily: "Barlow Semi Condensed"
     readonly property string monoFamily: "JetBrains Mono"
 
-    readonly property font fDisplay: Qt.font({ family: uiFamily, pixelSize: 28, weight: Font.DemiBold })
-    readonly property font fTitle: Qt.font({ family: uiFamily, pixelSize: 20, weight: Font.DemiBold })
-    readonly property font fHeading: Qt.font({ family: uiFamily, pixelSize: 16, weight: Font.DemiBold })
-    readonly property font fBody: Qt.font({ family: uiFamily, pixelSize: 14, weight: Font.Normal })
-    readonly property font fBodyStrong: Qt.font({ family: uiFamily, pixelSize: 14, weight: Font.Medium })
-    readonly property font fCaption: Qt.font({ family: uiFamily, pixelSize: 12, weight: Font.Medium })
+    readonly property font fDisplay: Qt.font({ family: uiFamily, pixelSize: 28, weight: Font.DemiBold , features: { "liga": 0 } })
+    readonly property font fTitle: Qt.font({ family: uiFamily, pixelSize: 20, weight: Font.DemiBold , features: { "liga": 0 } })
+    readonly property font fHeading: Qt.font({ family: uiFamily, pixelSize: 16, weight: Font.DemiBold , features: { "liga": 0 } })
+    readonly property font fBody: Qt.font({ family: uiFamily, pixelSize: 14, weight: Font.Normal , features: { "liga": 0 } })
+    readonly property font fBodyStrong: Qt.font({ family: uiFamily, pixelSize: 14, weight: Font.Medium , features: { "liga": 0 } })
+    readonly property font fCaption: Qt.font({ family: uiFamily, pixelSize: 12, weight: Font.Medium , features: { "liga": 0 } })
     readonly property font fReadout: Qt.font({ family: readoutFamily, pixelSize: 13, weight: Font.Medium, features: { "tnum": 1 } })
     readonly property font fReadoutLarge: Qt.font({ family: readoutFamily, pixelSize: 22, weight: Font.Medium, features: { "tnum": 1 } })
     // Ligatures off: code should show the characters the agent wrote.

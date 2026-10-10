@@ -59,6 +59,12 @@ qt_add_resources(gomp_core "gomp_data"
         ${PROJECT_SOURCE_DIR}/resources/mock/plan.json
         ${PROJECT_SOURCE_DIR}/resources/mock/subagents.json
         ${PROJECT_SOURCE_DIR}/resources/mock/error.json
+        ${PROJECT_SOURCE_DIR}/resources/mock/sessions/api-audit.jsonl
+        ${PROJECT_SOURCE_DIR}/resources/mock/sessions/api-ratelimit.jsonl
+        ${PROJECT_SOURCE_DIR}/resources/mock/sessions/api-redis.jsonl
+        ${PROJECT_SOURCE_DIR}/resources/mock/sessions/cli-flags.jsonl
+        ${PROJECT_SOURCE_DIR}/resources/mock/sessions/cli-release.jsonl
+        ${PROJECT_SOURCE_DIR}/resources/mock/sessions/site-tokens.jsonl
 )
 target_include_directories(gomp_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 # qmltyperegistrar includes registered headers by file name.

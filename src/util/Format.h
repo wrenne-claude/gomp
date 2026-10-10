@@ -23,6 +23,7 @@ public:
     Q_INVOKABLE static QString bytes(double count);            // 18 KB
     Q_INVOKABLE static QString shortPath(const QString &path); // ~/Projects/gomp
     Q_INVOKABLE static QString pricePerMTok(double usd);       // $3 / $15 inputs
+    Q_INVOKABLE static QString count(double n, const QString &singular, const QString &plural); // 1 message, 3 messages
 };
 
 } // namespace gomp

@@ -14,6 +14,7 @@ Item {
 
     function size(w, h) { win.width = w; win.height = h }
     function send(text) { ws.send(text) }
+    function findSession(title) { return App.sessions.findByTitle(title) }
 
     property var steps: [
         { name: "01-agent-empty", until: () => ws && ws.connection === Workspace.Ready, then: 600 },
@@ -29,6 +30,7 @@ Item {
         { name: "10-plan-running", run: () => ws.answerPlan("Approve and execute", ""), then: 1600 },
         { name: "11-subagents-running", run: () => send("Audit the API for security issues in parallel"), until: () => ws.subagents.running > 0, then: 1600 },
         { name: "12-subagents-screen", run: () => Ui.go("subagents"), then: 900 },
+        { name: "12b-subagent-drawer", run: () => Ui.openOverlay("subagent", { id: "AuditInput" }), then: 900 },
         { name: "13-agent-subagents-done", run: () => Ui.go("agent"), until: () => !ws.busy, then: 600 },
         { name: "14-inspector-context", run: () => { Ui.inspectorTab = "context"; ws.compact("") }, until: () => !ws.compacting, then: 800 },
         { name: "15-error", run: () => { Ui.inspectorTab = "plan"; send("Check why the deploy failed") }, until: () => !ws.busy, then: 600 },
@@ -37,7 +39,10 @@ Item {
         { name: "18-narrow", run: () => size(980, 760), then: 900 },
         { name: "19-reduced-effects", run: () => { size(1440, 900); App.prefs.effects = "reduced" }, then: 700 },
         { name: "20-shortcuts", run: () => { App.prefs.effects = "auto"; Ui.shortcutsOpen = true }, then: 700 },
-        { name: "21-model-picker", run: () => { Ui.shortcutsOpen = false; Ui.openOverlay("model", {}) }, then: 800 }
+        { name: "21-model-picker", run: () => { Ui.shortcutsOpen = false; Ui.openOverlay("model", {}) }, then: 800 },
+        { name: "22-sessions", run: () => { Ui.go("sessions") }, then: 1200 },
+        { name: "23-sessions-branched", run: () => { const s = driver.findSession("Move sessions to Redis"); if (s) Ui.selectSession(s) }, then: 900 },
+        { name: "24-sessions-light", run: () => App.prefs.themeMode = "light", then: 800 }
     ]
 
     // GOMP_SHOT_FILTER limits which states are saved; every step still runs to reach them.

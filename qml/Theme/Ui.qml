@@ -17,6 +17,12 @@ QtObject {
     signal toastRequested(string level, string message, string actionText, var action)
     signal openOverlay(string name, var props)
     signal focusComposer()
+    signal selectSessionRequested(string path)
+
+    function selectSession(path) {
+        screen = "sessions"
+        selectSessionRequested(path)
+    }
 
     function toast(level, message, actionText, action) {
         toastRequested(level, message, actionText || "", action || null)
