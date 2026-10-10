@@ -102,7 +102,7 @@ public:
     Q_INVOKABLE void openUrl(const QString &url) const;
     Q_INVOKABLE void revealPath(const QString &path) const;
     Q_INVOKABLE QString toLocalPath(const QString &url) const;
-    // Non-empty when resources/providers/<providerId>.svg (or .png) exists.
+    // The provider id when a logo for it exists and draws something, else empty.
     Q_INVOKABLE QString providerLogo(const QString &providerId) const;
     Q_INVOKABLE bool isDirectory(const QString &path) const;
     Q_INVOKABLE QString homePath() const;

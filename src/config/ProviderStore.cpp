@@ -9,6 +9,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonArray>
+#include <QJsonDocument>
 #include <QRegularExpression>
 #include <QSaveFile>
 #include <QStandardPaths>
@@ -394,28 +395,15 @@ void ProviderStore::refreshOAuth()
 
 void ProviderStore::loadDemoOAuth()
 {
-    struct Sample {
-        const char *id;
-        const char *name;
-        bool authenticated;
-    };
-    static const Sample samples[] = {
-        {"anthropic", "Anthropic (Claude Pro/Max)", true}, {"openai-codex", "ChatGPT Plus/Pro (Codex Subscription)", false},
-        {"github-copilot", "GitHub Copilot", true},        {"google-gemini-cli", "Google Cloud Code Assist (Gemini CLI)", false},
-        {"openrouter", "OpenRouter", true},                {"cursor", "Cursor (Claude, GPT, etc.)", false},
-        {"xai", "xAI API", false},                         {"deepseek", "DeepSeek", false},
-        {"moonshot", "Moonshot (Kimi API)", false},        {"zai", "Z.AI (GLM Coding Plan)", false},
-        {"mistral", "Mistral", false},                     {"groq", "Groq", false},
-        {"ollama", "Ollama (Local OpenAI-compatible)", false}, {"lm-studio", "LM Studio (Local OpenAI-compatible)", false},
-        {"together", "Together", false},                   {"fireworks", "Fireworks", false},
-        {"perplexity", "Perplexity (Pro/Max)", false},     {"cerebras", "Cerebras", false},
-    };
+    QFile f(u":/gomp/mock/providers.json"_s);
+    const auto list = f.open(QIODevice::ReadOnly) ? QJsonDocument::fromJson(f.readAll()).array() : QJsonArray{};
     m_oauth.clear();
-    for (const auto &s : samples) {
-        m_oauth << QVariantMap{{u"id"_s, QString::fromLatin1(s.id)},
-                               {u"name"_s, QString::fromLatin1(s.name)},
+    for (const auto &v : list) {
+        const auto p = v.toObject();
+        m_oauth << QVariantMap{{u"id"_s, p.value("id"_L1).toString()},
+                               {u"name"_s, p.value("name"_L1).toString()},
                                {u"available"_s, true},
-                               {u"authenticated"_s, s.authenticated}};
+                               {u"authenticated"_s, p.value("authenticated"_L1).toBool()}};
     }
     emit changed();
 }

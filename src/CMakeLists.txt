@@ -61,6 +61,7 @@ qt_add_resources(gomp_core "gomp_data"
         ${PROJECT_SOURCE_DIR}/resources/mock/subagents.json
         ${PROJECT_SOURCE_DIR}/resources/mock/error.json
         ${PROJECT_SOURCE_DIR}/resources/mock/crash.json
+        ${PROJECT_SOURCE_DIR}/resources/mock/providers.json
         ${PROJECT_SOURCE_DIR}/resources/mock/sessions/api-audit.jsonl
         ${PROJECT_SOURCE_DIR}/resources/mock/sessions/api-ratelimit.jsonl
         ${PROJECT_SOURCE_DIR}/resources/mock/sessions/api-redis.jsonl

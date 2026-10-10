@@ -1,0 +1,412 @@
+[
+ {
+  "id": "openai-codex",
+  "name": "ChatGPT Plus/Pro (Codex Subscription)",
+  "authenticated": false
+ },
+ {
+  "id": "anthropic",
+  "name": "Anthropic (Claude Pro/Max)",
+  "authenticated": true
+ },
+ {
+  "id": "zai",
+  "name": "Z.AI (GLM Coding Plan)",
+  "authenticated": false
+ },
+ {
+  "id": "zai-coding-plan",
+  "name": "Z.AI (GLM Coding Plan · Sign in)",
+  "authenticated": false
+ },
+ {
+  "id": "kimi-code",
+  "name": "Kimi Code",
+  "authenticated": false
+ },
+ {
+  "id": "openrouter",
+  "name": "OpenRouter",
+  "authenticated": true
+ },
+ {
+  "id": "github-copilot",
+  "name": "GitHub Copilot",
+  "authenticated": true
+ },
+ {
+  "id": "cursor",
+  "name": "Cursor (Claude, GPT, etc.)",
+  "authenticated": false
+ },
+ {
+  "id": "devin",
+  "name": "Devin",
+  "authenticated": false
+ },
+ {
+  "id": "google-antigravity",
+  "name": "Antigravity (Gemini 3, Claude, GPT-OSS)",
+  "authenticated": false
+ },
+ {
+  "id": "google-gemini-cli",
+  "name": "Google Cloud Code Assist (Gemini CLI)",
+  "authenticated": false
+ },
+ {
+  "id": "openai-codex-device",
+  "name": "ChatGPT Plus/Pro (Codex, headless/device)",
+  "authenticated": false
+ },
+ {
+  "id": "xai",
+  "name": "xAI API",
+  "authenticated": false
+ },
+ {
+  "id": "xai-oauth",
+  "name": "xAI Grok OAuth (SuperGrok or X Premium+)",
+  "authenticated": false
+ },
+ {
+  "id": "gitlab-duo",
+  "name": "GitLab Duo Non-Agentic",
+  "authenticated": false
+ },
+ {
+  "id": "gitlab-duo-agent",
+  "name": "GitLab Duo Agent",
+  "authenticated": false
+ },
+ {
+  "id": "alibaba-coding-plan",
+  "name": "Alibaba Coding Plan",
+  "authenticated": false
+ },
+ {
+  "id": "alibaba-token-plan",
+  "name": "QwenCloud Token Plan",
+  "authenticated": false
+ },
+ {
+  "id": "aiand",
+  "name": "ai&",
+  "authenticated": false
+ },
+ {
+  "id": "abliteration",
+  "name": "Abliteration",
+  "authenticated": false
+ },
+ {
+  "id": "zhipu-coding-plan",
+  "name": "Zhipu Coding Plan",
+  "authenticated": false
+ },
+ {
+  "id": "umans",
+  "name": "Umans AI Coding Plan",
+  "authenticated": false
+ },
+ {
+  "id": "qwen-portal",
+  "name": "Qwen Portal",
+  "authenticated": false
+ },
+ {
+  "id": "sakana",
+  "name": "Sakana AI",
+  "authenticated": false
+ },
+ {
+  "id": "minimax-code",
+  "name": "MiniMax Token Plan (International)",
+  "authenticated": false
+ },
+ {
+  "id": "minimax-code-cn",
+  "name": "MiniMax Token Plan (China)",
+  "authenticated": false
+ },
+ {
+  "id": "xiaomi",
+  "name": "Xiaomi MiMo",
+  "authenticated": false
+ },
+ {
+  "id": "xiaomi-token-plan-sgp",
+  "name": "Xiaomi Token Plan (Singapore)",
+  "authenticated": false
+ },
+ {
+  "id": "xiaomi-token-plan-ams",
+  "name": "Xiaomi Token Plan (Europe)",
+  "authenticated": false
+ },
+ {
+  "id": "xiaomi-token-plan-cn",
+  "name": "Xiaomi Token Plan (China)",
+  "authenticated": false
+ },
+ {
+  "id": "firepass",
+  "name": "Fire Pass (Fireworks subscription)",
+  "authenticated": false
+ },
+ {
+  "id": "cline-pass",
+  "name": "ClinePass",
+  "authenticated": false
+ },
+ {
+  "id": "factory-droid",
+  "name": "Factory Droid",
+  "authenticated": false
+ },
+ {
+  "id": "commandcode",
+  "name": "Command Code",
+  "authenticated": false
+ },
+ {
+  "id": "charm-hyper",
+  "name": "Charm Hyper",
+  "authenticated": false
+ },
+ {
+  "id": "deepseek",
+  "name": "DeepSeek",
+  "authenticated": false
+ },
+ {
+  "id": "stepfun",
+  "name": "StepFun",
+  "authenticated": false
+ },
+ {
+  "id": "muse-code",
+  "name": "Muse Code (Subscription)",
+  "authenticated": false
+ },
+ {
+  "id": "meta",
+  "name": "Meta Model API",
+  "authenticated": false
+ },
+ {
+  "id": "moonshot",
+  "name": "Moonshot (Kimi API)",
+  "authenticated": false
+ },
+ {
+  "id": "cerebras",
+  "name": "Cerebras",
+  "authenticated": false
+ },
+ {
+  "id": "baseten",
+  "name": "Baseten",
+  "authenticated": false
+ },
+ {
+  "id": "helmcode",
+  "name": "Helmcode",
+  "authenticated": false
+ },
+ {
+  "id": "fireworks",
+  "name": "Fireworks",
+  "authenticated": false
+ },
+ {
+  "id": "together",
+  "name": "Together",
+  "authenticated": false
+ },
+ {
+  "id": "nvidia",
+  "name": "NVIDIA",
+  "authenticated": false
+ },
+ {
+  "id": "novita",
+  "name": "Novita",
+  "authenticated": false
+ },
+ {
+  "id": "deepinfra",
+  "name": "DeepInfra",
+  "authenticated": false
+ },
+ {
+  "id": "huggingface",
+  "name": "Hugging Face Inference",
+  "authenticated": false
+ },
+ {
+  "id": "perplexity",
+  "name": "Perplexity (Pro/Max)",
+  "authenticated": false
+ },
+ {
+  "id": "qianfan",
+  "name": "Qianfan",
+  "authenticated": false
+ },
+ {
+  "id": "venice",
+  "name": "Venice",
+  "authenticated": false
+ },
+ {
+  "id": "siliconflow",
+  "name": "SiliconFlow",
+  "authenticated": false
+ },
+ {
+  "id": "siliconflow-cn",
+  "name": "SiliconFlow (China)",
+  "authenticated": false
+ },
+ {
+  "id": "synthetic",
+  "name": "Synthetic",
+  "authenticated": false
+ },
+ {
+  "id": "nanogpt",
+  "name": "NanoGPT",
+  "authenticated": false
+ },
+ {
+  "id": "wafer-serverless",
+  "name": "Wafer Serverless",
+  "authenticated": false
+ },
+ {
+  "id": "coreweave",
+  "name": "CoreWeave Serverless Inference",
+  "authenticated": false
+ },
+ {
+  "id": "vercel-ai-gateway",
+  "name": "Vercel AI Gateway",
+  "authenticated": false
+ },
+ {
+  "id": "cloudflare-ai-gateway",
+  "name": "Cloudflare AI Gateway",
+  "authenticated": false
+ },
+ {
+  "id": "snowflake",
+  "name": "Snowflake Cortex",
+  "authenticated": false
+ },
+ {
+  "id": "litellm",
+  "name": "LiteLLM",
+  "authenticated": false
+ },
+ {
+  "id": "kilo",
+  "name": "Kilo Gateway",
+  "authenticated": false
+ },
+ {
+  "id": "zenmux",
+  "name": "ZenMux",
+  "authenticated": false
+ },
+ {
+  "id": "opencode-zen",
+  "name": "OpenCode Zen",
+  "authenticated": false
+ },
+ {
+  "id": "opencode-go",
+  "name": "OpenCode Go",
+  "authenticated": false
+ },
+ {
+  "id": "yolo-auto",
+  "name": "Yolo-Auto",
+  "authenticated": false
+ },
+ {
+  "id": "tavily",
+  "name": "Tavily",
+  "authenticated": false
+ },
+ {
+  "id": "kagi",
+  "name": "Kagi",
+  "authenticated": false
+ },
+ {
+  "id": "exa",
+  "name": "Exa",
+  "authenticated": false
+ },
+ {
+  "id": "parallel",
+  "name": "Parallel",
+  "authenticated": false
+ },
+ {
+  "id": "typesafe",
+  "name": "TypeSafe",
+  "authenticated": false
+ },
+ {
+  "id": "ollama",
+  "name": "Ollama (local)",
+  "authenticated": false
+ },
+ {
+  "id": "ollama-cloud",
+  "name": "Ollama Cloud",
+  "authenticated": false
+ },
+ {
+  "id": "lm-studio",
+  "name": "LM Studio (local)",
+  "authenticated": false
+ },
+ {
+  "id": "llama.cpp",
+  "name": "llama.cpp (local)",
+  "authenticated": false
+ },
+ {
+  "id": "vllm",
+  "name": "vLLM (local)",
+  "authenticated": false
+ },
+ {
+  "id": "gmi-cloud",
+  "name": "GMI Cloud",
+  "authenticated": false
+ },
+ {
+  "id": "stencil",
+  "name": "Stencil",
+  "authenticated": false
+ },
+ {
+  "id": "singularityapi-dev",
+  "name": "SingularityAPI",
+  "authenticated": false
+ },
+ {
+  "id": "singularityapi-tech",
+  "name": "SingularityAPI Reserved Lanes",
+  "authenticated": false
+ },
+ {
+  "id": "coralbricks",
+  "name": "CoralBricks",
+  "authenticated": false
+ }
+]

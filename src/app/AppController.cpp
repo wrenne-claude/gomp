@@ -1,5 +1,7 @@
 #include "AppController.h"
 
+#include "util/ProviderLogoProvider.h"
+
 #include "adapter/MockBackend.h"
 #include "adapter/OmpBackend.h"
 
@@ -388,12 +390,13 @@ QString AppController::providerLogo(const QString &providerId) const
 {
     if (providerId.isEmpty() || providerId.contains(u'/') || providerId.contains(u'\\'))
         return {};
-    for (const auto &ext : {u"svg"_s, u"png"_s}) {
-        const auto path = u"/qt/qml/Gomp/providers/%1.%2"_s.arg(providerId, ext);
-        if (QFile::exists(u":"_s + path))
-            return u"qrc:"_s + path;
-    }
-    return {};
+    // Cached: a logo that exists but draws nothing (an SVG that relies on masks or filters) is
+    // treated as missing, so the tile shows initials instead of a blank square.
+    static QHash<QString, bool> drawable;
+    auto it = drawable.find(providerId);
+    if (it == drawable.end())
+        it = drawable.insert(providerId, !ProviderLogoProvider::load(providerId, QSize(32, 32)).isNull());
+    return it.value() ? providerId : QString{};
 }
 
 QString AppController::toLocalPath(const QString &url) const

@@ -15,6 +15,10 @@ public:
     ProviderLogoProvider();
     QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize) override;
 
+    // The logo for a provider id at `target`, from <id>.svg or, when the SVG is missing or draws
+    // nothing (Qt's SVG renderer ignores masks and filters), <id>.png. Null when neither works.
+    [[nodiscard]] static QImage load(const QString &name, const QSize &target);
+
     // True when every visible pixel is near-black or every visible pixel is near-white.
     [[nodiscard]] static bool isSingleTone(const QImage &argb32);
     static void tint(QImage &argb32, const QColor &color);
