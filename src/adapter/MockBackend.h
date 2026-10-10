@@ -78,6 +78,9 @@ private:
     QString m_pendingPlanId;
     QJsonArray m_onDeny;
     QJsonArray m_onApprovePlan;
+    QJsonArray m_todos;
+    QStringList m_queued;
+    bool m_titled = false;
     QJsonObject m_model;
     QString m_thinkingLevel = QStringLiteral("high");
     qint64 m_contextTokens = 18'400;

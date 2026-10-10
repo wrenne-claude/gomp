@@ -43,12 +43,13 @@ QList<Line> rawDiff(const QStringList &a, const QStringList &b)
                 out << Line{Line::Kind::Context, int(pre + i + 1), int(pre + j + 1), a.at(pre + i)};
                 ++i;
                 ++j;
-            } else if (j < m && (i == n || lcs[size_t(i)][size_t(j + 1)] >= lcs[size_t(i + 1)][size_t(j)])) {
-                out << Line{Line::Kind::Added, 0, int(pre + j + 1), b.at(pre + j)};
-                ++j;
-            } else {
+            } else if (i < n && (j == m || lcs[size_t(i + 1)][size_t(j)] >= lcs[size_t(i)][size_t(j + 1)])) {
+                // Removals before additions, as in unified diffs.
                 out << Line{Line::Kind::Removed, int(pre + i + 1), 0, a.at(pre + i)};
                 ++i;
+            } else {
+                out << Line{Line::Kind::Added, 0, int(pre + j + 1), b.at(pre + j)};
+                ++j;
             }
         }
     } else {

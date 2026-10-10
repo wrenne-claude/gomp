@@ -302,9 +302,28 @@ void AppController::setSyntaxPalette(const QVariantMap &c)
                                get("function", m_syntax.function), get("punctuation", m_syntax.punctuation),
                                get("added", m_syntax.added),       get("removed", m_syntax.removed),
                                get("meta", m_syntax.meta)};
+    m_mdStyle = md::Style{get("text", m_mdStyle.text), get("secondary", m_mdStyle.secondary), get("accent", m_mdStyle.link),
+                          get("codeText", m_mdStyle.codeText), get("codeBg", m_mdStyle.codeBg),
+                          get("hairline", m_mdStyle.hairline), get("headerBg", m_mdStyle.headerBg),
+                          m_mdStyle.uiFamily, m_mdStyle.monoFamily};
+    m_mdCache.clear();
     const auto accent = get("accent", u"#FFB547"_s);
     m_models->setHighlightColor(accent);
     m_palette->setHighlightColor(accent);
+}
+
+QString AppController::renderMarkdown(const QString &markdown) const
+{
+    if (const auto *hit = m_mdCache.object(markdown))
+        return *hit;
+    const auto html = md::toHtml(markdown, m_mdStyle);
+    m_mdCache.insert(markdown, new QString(html), int(markdown.size() / 64) + 1);
+    return html;
+}
+
+QVariantList AppController::markdownSegments(const QString &markdown) const
+{
+    return md::toVariant(md::split(markdown));
 }
 
 void AppController::copyText(const QString &text) const

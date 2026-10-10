@@ -154,6 +154,16 @@ QString ShortcutModel::setSequence(const QString &id, const QString &sequence)
     return {};
 }
 
+QVariantList ShortcutModel::entries(const QString &category) const
+{
+    QVariantList out;
+    for (const auto &d : defaults()) {
+        if (d.category == category)
+            out << QVariantMap{{u"id"_s, d.id}, {u"title"_s, d.title}, {u"sequence"_s, current(d)}};
+    }
+    return out;
+}
+
 void ShortcutModel::reset(const QString &id)
 {
     auto overrides = m_prefs->shortcutOverrides();

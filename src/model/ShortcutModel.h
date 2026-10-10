@@ -32,6 +32,7 @@ public:
     Q_INVOKABLE QString conflictFor(const QString &id, const QString &sequence) const; // title of clashing action
     // Returns empty on success, or a message when the sequence is unusable.
     Q_INVOKABLE QString setSequence(const QString &id, const QString &sequence);
+    Q_INVOKABLE QVariantList entries(const QString &category) const;
     Q_INVOKABLE void reset(const QString &id);
     Q_INVOKABLE void resetAll();
     Q_INVOKABLE static QString portableText(const QString &sequence); // "Ctrl+Shift+K" -> "Ctrl Shift K" glyph-ready

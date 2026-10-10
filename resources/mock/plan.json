@@ -1,4 +1,5 @@
 {
+ "title": "Move sessions to Redis",
  "ops": [
   {
    "op": "think",

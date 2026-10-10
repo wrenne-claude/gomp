@@ -1,6 +1,11 @@
 #include "Markdown.h"
 
 #include <QRegularExpression>
+#include <QTextBlock>
+#include <QTextCursor>
+#include <QTextDocument>
+#include <QTextFrame>
+#include <QTextTable>
 #include <QVariantMap>
 
 using namespace Qt::StringLiterals;
@@ -114,6 +119,92 @@ QString plainPreview(const QString &markdown, int maxChars)
     if (s.size() > maxChars)
         s = s.left(maxChars - 1).trimmed() + u'…';
     return s;
+}
+
+QString toHtml(const QString &markdown, const Style &st)
+{
+    QTextDocument doc;
+    QFont base(st.uiFamily);
+    base.setPixelSize(14);
+    doc.setDefaultFont(base);
+    doc.setDocumentMargin(0);
+    doc.setMarkdown(markdown, QTextDocument::MarkdownDialectGitHub);
+
+    struct Range {
+        int start;
+        int end;
+        QTextCharFormat fmt;
+    };
+    QList<Range> ranges;
+    for (auto block = doc.begin(); block.isValid(); block = block.next()) {
+        QTextCursor bc(block);
+        auto bf = block.blockFormat();
+        const int level = bf.headingLevel();
+        if (level > 0) {
+            bf.setTopMargin(level <= 2 ? 10 : 6);
+            bf.setBottomMargin(4);
+        } else {
+            bf.setTopMargin(0);
+            bf.setBottomMargin(block.textList() ? 3 : 10);
+        }
+        bf.setLineHeight(150, QTextBlockFormat::ProportionalHeight);
+        bc.setBlockFormat(bf);
+        const bool quote = bf.hasProperty(QTextFormat::BlockQuoteLevel);
+        for (auto it = block.begin(); !it.atEnd(); ++it) {
+            const auto frag = it.fragment();
+            const auto cf = frag.charFormat();
+            QTextCharFormat nf;
+            if (cf.fontFixedPitch()) {
+                nf.setFontFamilies({st.monoFamily});
+                nf.setProperty(QTextFormat::FontPixelSize, 13);
+                nf.setForeground(QColor(st.codeText));
+                nf.setBackground(QColor(st.codeBg));
+            }
+            if (cf.isAnchor()) {
+                nf.setForeground(QColor(st.link));
+                nf.setFontUnderline(true);
+                nf.setUnderlineColor(QColor(st.link));
+            }
+            if (level > 0) {
+                nf.setProperty(QTextFormat::FontPixelSize, level == 1 ? 20 : level == 2 ? 17 : 15);
+                nf.setFontWeight(QFont::DemiBold);
+            }
+            if (quote)
+                nf.setForeground(QColor(st.secondary));
+            ranges << Range{frag.position(), frag.position() + frag.length(), nf};
+        }
+    }
+    // Apply after collecting: merging formats splits fragments and would invalidate iteration.
+    for (const auto &r : std::as_const(ranges)) {
+        QTextCursor c(&doc);
+        c.setPosition(r.start);
+        c.setPosition(r.end, QTextCursor::KeepAnchor);
+        c.mergeCharFormat(r.fmt);
+    }
+    const std::function<void(QTextFrame *)> styleTables = [&](QTextFrame *frame) {
+        for (auto *child : frame->childFrames()) {
+            if (auto *table = qobject_cast<QTextTable *>(child)) {
+                auto tf = table->format();
+                tf.setBorder(1);
+                tf.setBorderBrush(QColor(st.hairline));
+                tf.setBorderStyle(QTextFrameFormat::BorderStyle_Solid);
+                tf.setBorderCollapse(true);
+                tf.setCellPadding(6);
+                tf.setCellSpacing(0);
+                tf.setBottomMargin(10);
+                table->setFormat(tf);
+                for (int col = 0; col < table->columns(); ++col) {
+                    auto cell = table->cellAt(0, col);
+                    auto cf = cell.format();
+                    cf.setBackground(QColor(st.headerBg));
+                    cell.setFormat(cf);
+                }
+            }
+            styleTables(child);
+        }
+    };
+    styleTables(doc.rootFrame());
+    return doc.toHtml();
 }
 
 } // namespace gomp::md

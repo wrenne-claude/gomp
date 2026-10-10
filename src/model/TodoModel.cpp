@@ -222,7 +222,8 @@ QList<TodoPhase> TodoModel::fromMarkdown(const QString &markdown)
                                 : mark == "~"_L1                     ? u"in_progress"_s
                                 : mark == "-"_L1                     ? u"abandoned"_s
                                                                      : u"pending"_s;
-            phases.last().tasks << TodoItem{c.captured(2), status, {}, {}};
+            static const QRegularExpression inlineMarks(u"`|\\*\\*"_s);
+            phases.last().tasks << TodoItem{c.captured(2).remove(inlineMarks), status, {}, {}};
         }
     }
     // Drop headings that introduced no steps (title, context sections).

@@ -15,7 +15,10 @@
 #include "model/ShortcutModel.h"
 #include "model/WorkspaceManager.h"
 #include "util/Notifier.h"
+#include "util/Markdown.h"
 #include "util/SyntaxHighlighter.h"
+
+#include <QCache>
 
 #include <QColor>
 #include <QObject>
@@ -49,6 +52,7 @@ class AppController : public QObject
     Q_PROPERTY(bool systemDark READ systemDark NOTIFY systemPaletteChanged)
     Q_PROPERTY(QString version READ version CONSTANT)
     Q_PROPERTY(QString screenshotDir READ screenshotDir CONSTANT)
+    Q_PROPERTY(QString shotFilter READ shotFilter CONSTANT)
     Q_PROPERTY(bool windowActive READ windowActive NOTIFY windowActiveChanged)
 public:
     struct Options {
@@ -79,6 +83,7 @@ public:
     [[nodiscard]] bool systemDark() const;
     [[nodiscard]] QString version() const;
     [[nodiscard]] QString screenshotDir() const { return m_options.screenshotDir; }
+    [[nodiscard]] static QString shotFilter() { return qEnvironmentVariable("GOMP_SHOT_FILTER"); }
     [[nodiscard]] bool windowActive() const;
 
     Q_INVOKABLE void start();
@@ -91,6 +96,8 @@ public:
 
     Q_INVOKABLE QString highlight(const QString &code, const QString &language) const;
     Q_INVOKABLE void setSyntaxPalette(const QVariantMap &colors);
+    Q_INVOKABLE QString renderMarkdown(const QString &markdown) const;
+    Q_INVOKABLE QVariantList markdownSegments(const QString &markdown) const;
     Q_INVOKABLE void copyText(const QString &text) const;
     Q_INVOKABLE void openUrl(const QString &url) const;
     Q_INVOKABLE void revealPath(const QString &path) const;
@@ -135,6 +142,8 @@ private:
     EffectsProbe *m_effects;
     Notifier *m_notifier;
     syntax::Palette m_syntax;
+    md::Style m_mdStyle;
+    mutable QCache<QString, QString> m_mdCache{300};
 };
 
 } // namespace gomp

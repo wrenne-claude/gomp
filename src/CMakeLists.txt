@@ -5,6 +5,7 @@ qt_add_qml_module(gomp_core
     URI Gomp.Core
     VERSION 1.0
     RESOURCE_PREFIX /qt/qml
+    OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/qml/Gomp/Core
     SOURCES
         adapter/AgentEvents.h
         adapter/AgentBackend.h
@@ -26,6 +27,7 @@ qt_add_qml_module(gomp_core
         util/Notifier.h util/Notifier.cpp
         util/GitInfo.h util/GitInfo.cpp
         util/Format.h util/Format.cpp
+        util/IconProvider.h util/IconProvider.cpp
         config/SettingsSchema.h config/SettingsSchema.cpp
         config/ConfigStore.h config/ConfigStore.cpp
         config/McpStore.h config/McpStore.cpp
@@ -64,5 +66,5 @@ target_include_directories(gomp_core PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/adapter ${CMAKE_CURRENT_SOURCE_DIR}/util ${CMAKE_CURRENT_SOURCE_DIR}/config
     ${CMAKE_CURRENT_SOURCE_DIR}/model ${CMAKE_CURRENT_SOURCE_DIR}/app)
 target_link_libraries(gomp_core
-    PUBLIC Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::DBus Qt6::Concurrent
+    PUBLIC Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::DBus Qt6::Concurrent Qt6::Svg
     PRIVATE gomp_warnings)

@@ -165,6 +165,7 @@ void MockBackend::emitState()
         {"sessionFile"_L1, QDir::homePath() + u"/.omp/agent/sessions/-mock/session.jsonl"_s},
         {"autoCompactionEnabled"_L1, true},
         {"messageCount"_L1, m_seq},
+        {"todoPhases"_L1, m_todos},
         {"tokensPerSecond"_L1, m_streaming ? 62.0 : 0.0},
         {"contextUsage"_L1, QJsonObject{{"tokens"_L1, m_contextTokens},
                                         {"contextWindow"_L1, m_model.value("contextWindow"_L1)},
@@ -185,10 +186,10 @@ QString MockBackend::pickScenario(const QString &prompt) const
         return u"plan"_s;
     if (p.contains("parallel"_L1) || p.contains("subagent"_L1) || p.contains("audit"_L1))
         return u"subagents"_s;
-    if (p.contains("fail"_L1) || p.contains("error"_L1))
-        return u"error"_s;
     if (p.contains("fix"_L1) || p.contains("edit"_L1) || p.contains("change"_L1))
         return u"edit"_s;
+    if (p.contains("fail"_L1) || p.contains("error"_L1) || p.contains("deploy"_L1))
+        return u"error"_s;
     return u"explain"_s;
 }
 
@@ -200,8 +201,10 @@ void MockBackend::prompt(const QString &text, const QList<ImageAttachment> &imag
         return;
     }
     if (m_streaming) {
+        m_queued << text;
         emitFrame({{"type"_L1, u"queue_update"_s},
-                   {"queuedMessages"_L1, QJsonObject{{"steering"_L1, QJsonArray{}}, {"followUp"_L1, QJsonArray{text}}}}});
+                   {"queuedMessages"_L1, QJsonObject{{"steering"_L1, QJsonArray{}},
+                                                     {"followUp"_L1, QJsonArray::fromStringList(m_queued)}}}});
         return;
     }
     QJsonArray content{QJsonObject{{"type"_L1, u"text"_s}, {"text"_L1, text}}};
@@ -212,7 +215,14 @@ void MockBackend::prompt(const QString &text, const QList<ImageAttachment> &imag
                {"message"_L1, QJsonObject{{"role"_L1, u"user"_s},
                                           {"content"_L1, content},
                                           {"timestamp"_L1, QDateTime::currentMSecsSinceEpoch()}}}});
-    playScenario(pickScenario(text), text);
+    const auto scenario = pickScenario(text);
+    if (!m_titled) {
+        m_titled = true;
+        const auto title = loadScenario(scenario).value("title"_L1).toString();
+        if (!title.isEmpty())
+            emitFrame({{"type"_L1, u"session_info_update"_s}, {"title"_L1, title}, {"sessionId"_L1, u"mock"_s}});
+    }
+    playScenario(scenario, text);
 }
 
 void MockBackend::playScenario(const QString &name, const QString &)
@@ -291,6 +301,14 @@ void MockBackend::finishTurn(const QString &status)
     emitFrame({{"type"_L1, u"prompt_result"_s}, {"status"_L1, status}, {"agentInvoked"_L1, true},
                {"sessionSettled"_L1, true}});
     emitState();
+    // Deliver queued follow-ups the way omp does: one new turn per queued message.
+    if (!m_queued.isEmpty() && status != "aborted"_L1) {
+        const auto next = m_queued.takeFirst();
+        emitFrame({{"type"_L1, u"queue_update"_s},
+                   {"queuedMessages"_L1, QJsonObject{{"steering"_L1, QJsonArray{}},
+                                                     {"followUp"_L1, QJsonArray::fromStringList(m_queued)}}}});
+        QTimer::singleShot(int(300 / m_timeScale), this, [this, next] { prompt(next); });
+    }
 }
 
 void MockBackend::enqueueOps(const QJsonArray &ops)
@@ -367,11 +385,12 @@ void MockBackend::enqueueOp(const QJsonObject &op)
             }, true);
         }
         const auto partials = op.value("partials"_L1).toArray();
-        for (const auto &p : partials) {
-            enqueue(ms / static_cast<int>(partials.size() + 1), [this, id, name, p] {
+        for (const auto &pv : partials) {
+            const auto partial = pv.toString(); // copy now: the array is a temporary
+            enqueue(ms / static_cast<int>(partials.size() + 1), [this, id, name, partial] {
                 emitFrame({{"type"_L1, u"tool_execution_update"_s}, {"toolCallId"_L1, id}, {"toolName"_L1, name},
                            {"partialResult"_L1, QJsonObject{{"content"_L1, QJsonArray{QJsonObject{
-                                                                {"type"_L1, u"text"_s}, {"text"_L1, p.toString()}}}}}}});
+                                                                {"type"_L1, u"text"_s}, {"text"_L1, partial}}}}}}});
             });
         }
         enqueue(partials.isEmpty() ? ms : ms / static_cast<int>(partials.size() + 1),
@@ -392,7 +411,10 @@ void MockBackend::enqueueOp(const QJsonObject &op)
 
     if (kind == "todos"_L1) {
         const auto phases = op.value("phases"_L1).toArray();
-        enqueue(op.value("delay"_L1).toInt(80), [this, phases] { emit agentEvent(TodosEvent{rpc::parseTodoPhases(phases)}); });
+        enqueue(op.value("delay"_L1).toInt(80), [this, phases] {
+            m_todos = phases;
+            emit agentEvent(TodosEvent{rpc::parseTodoPhases(phases)});
+        });
         return;
     }
 
