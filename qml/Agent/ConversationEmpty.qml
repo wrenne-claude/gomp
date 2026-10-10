@@ -4,17 +4,19 @@ import QtQuick.Layouts
 import Gomp
 import Gomp.Core
 
-// A fresh session: the Corona at rest, where it is pointed, and three ways to start.
+// A fresh session: the logo, where it is pointed, and three ways to start. The agent's status is
+// in the header and the titlebar.
 ColumnLayout {
     id: empty
     property Workspace workspace: null
     width: Math.min(560, parent ? parent.width - Theme.s6 * 2 : 560)
     spacing: Theme.s4
 
-    Corona {
+    GLogo {
         Layout.alignment: Qt.AlignHCenter
-        size: Theme.compact ? 96 : 140
-        workspace: empty.workspace
+        Layout.preferredWidth: size
+        Layout.preferredHeight: size
+        size: Theme.compact ? 80 : 120
     }
     GText {
         Layout.alignment: Qt.AlignHCenter

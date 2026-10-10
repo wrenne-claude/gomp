@@ -9,6 +9,16 @@ Rectangle {
     id: header
     property Workspace workspace: null
     implicitHeight: Theme.compact ? 48 : 56
+    readonly property string status: {
+        const ws = header.workspace
+        if (!ws) return ""
+        if (ws.connection === Workspace.Failed || ws.connection === Workspace.Disconnected) return qsTr("Stopped")
+        if (ws.connection === Workspace.Switching) return qsTr("Switching mode")
+        if (ws.connection !== Workspace.Ready) return qsTr("Connecting")
+        if (ws.activity === Workspace.Idle) return qsTr("Ready")
+        if (ws.activity === Workspace.Approval || ws.activity === Workspace.Error) return Theme.activityLabel(ws.activity)
+        return qsTr("Working")
+    }
     color: "transparent"
     Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Theme.hairline }
 
@@ -45,11 +55,27 @@ Rectangle {
                     onActiveFocusChanged: if (!activeFocus) visible = false
                 }
             }
-            GText {
+            // What the agent is doing, then where it is working.
+            RowLayout {
                 Layout.fillWidth: true
-                text: header.workspace ? Fmt.shortPath(header.workspace.cwd) : ""
-                role: "caption"
-                tone: "tertiary"
+                spacing: Theme.s1 + 2
+                Corona {
+                    size: 12
+                    workspace: header.workspace
+                }
+                GText {
+                    text: header.status
+                    role: "caption"
+                    color: header.workspace && header.workspace.busy
+                           ? Theme.activityColor(header.workspace.activity, header.workspace.mode) : Theme.textSecondary
+                }
+                GText {
+                    Layout.fillWidth: true
+                    Layout.leftMargin: Theme.s1
+                    text: header.workspace ? Fmt.shortPath(header.workspace.cwd) : ""
+                    role: "caption"
+                    tone: "tertiary"
+                }
             }
         }
 
