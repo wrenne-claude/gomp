@@ -127,6 +127,11 @@ void Workspace::checkStartupModel()
             .arg(m_state.model.name.isEmpty() ? m_state.model.id : m_state.model.name, m_expectedModel));
 }
 
+double Workspace::quietSeconds() const
+{
+    return m_busy && m_lastOutput.isValid() ? m_lastOutput.elapsed() / 1000.0 : 0.0;
+}
+
 double Workspace::turnSeconds() const
 {
     return m_busy && m_turnClock.isValid() ? m_turnClock.elapsed() / 1000.0 : 0.0;
@@ -182,6 +187,7 @@ void Workspace::recomputeActivity()
 
 void Workspace::onEvent(const AgentEvent &event)
 {
+    m_lastOutput.start(); // anything omp says counts as signs of life
     m_conversation->apply(event);
 
     if (const auto *e = std::get_if<ProcessEvent>(&event)) {
@@ -190,10 +196,12 @@ void Workspace::onEvent(const AgentEvent &event)
             break;
         case ProcessEvent::Kind::Exited:
             m_busy = false;
+            dropProcessRequests();
             setConnection(Connection::Disconnected, u"omp exited."_s);
             break;
         case ProcessEvent::Kind::Crashed: {
             m_busy = false;
+            dropProcessRequests();
             static const QRegularExpression restore(uR"(Could not restore model (\S+))"_s);
             const auto m = restore.match(e->message);
             setConnection(Connection::Failed,
@@ -215,6 +223,9 @@ void Workspace::onEvent(const AgentEvent &event)
         return;
     }
     if (const auto *e = std::get_if<ReadyEvent>(&event)) {
+        // A new omp process (start, restart or a plan-mode handoff): requests the previous one
+        // made can no longer be answered.
+        dropProcessRequests();
         setConnection(Connection::Ready);
         if (e->transport == "rpc"_L1 && !m_historyLoaded)
             loadHistory();
@@ -344,11 +355,19 @@ void Workspace::onEvent(const AgentEvent &event)
     if (const auto *e = std::get_if<AgentEndEvent>(&event)) {
         if (e->terminal && !m_state.isStreaming) {
             m_busy = false;
+            m_conversation->settleTools();
             recomputeActivity();
         }
         return;
     }
     if (const auto *e = std::get_if<ApprovalRequestEvent>(&event)) {
+        if (e->clientGated && approvalModeAllows(e->toolName)) {
+            // Plan mode's transport asks for bash/edit/delete/move whenever approvalMode is not
+            // set explicitly; answer as the effective setting would (docs/omp-integration.md).
+            m_conversation->resolveApproval(e->requestId, true);
+            m_backend->answerApproval(e->requestId, true);
+            return;
+        }
         m_approvals << e->requestId;
         m_conversation->attachApproval(*e);
         emit attention(u"approval"_s, u"Approval needed in %1"_s.arg(name()),
@@ -498,6 +517,38 @@ void Workspace::retry()
         return;
     }
     m_backend->prompt(u"/retry"_s);
+}
+
+void Workspace::setApprovalPolicy(const QString &mode, const QVariantMap &toolPolicies)
+{
+    m_approvalMode = mode;
+    m_toolPolicies = toolPolicies;
+}
+
+bool Workspace::approvalModeAllows(const QString &toolName) const
+{
+    // Mirrors omp's own rule: a per-tool policy wins, then the mode's tier. Of the tools ACP gates,
+    // bash is exec tier; edit, delete and move are workspace writes.
+    const auto policy = m_toolPolicies.value(toolName).toString();
+    if (policy == "allow"_L1)
+        return true;
+    if (policy == "prompt"_L1 || policy == "deny"_L1 || toolName.isEmpty())
+        return false;
+    if (m_approvalMode == "yolo"_L1)
+        return true;
+    return m_approvalMode == "write"_L1 && toolName != "bash"_L1;
+}
+
+void Workspace::dropProcessRequests()
+{
+    const bool had = !m_approvals.isEmpty() || !m_uiRequests.isEmpty();
+    m_approvals.clear();
+    m_uiRequests.clear();
+    m_conversation->settleTools();
+    if (had) {
+        emit uiRequestsChanged();
+        recomputeActivity();
+    }
 }
 
 void Workspace::approve(const QString &approvalId, bool approved)

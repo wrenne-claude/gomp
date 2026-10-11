@@ -171,9 +171,13 @@ struct UiRequestEvent {
 
 struct ApprovalRequestEvent {
     QString requestId;
-    QString toolName; // best effort, parsed from the title
+    QString toolName;   // best effort, parsed from the title
     QString title;
     QString reason;
+    QString toolCallId; // the exact call, when the transport says (ACP does; RPC does not)
+    // True when omp asks only because the client protocol requires it (ACP gates bash, edit,
+    // delete and move unless tools.approvalMode is explicitly set), not because a policy says so.
+    bool clientGated = false;
 };
 
 struct UiCancelEvent {

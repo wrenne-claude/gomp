@@ -28,12 +28,17 @@ Item {
     readonly property bool awaiting: toolStatus === "awaiting"
     readonly property bool running: toolStatus === "running"
     readonly property bool failed: toolStatus === "error" || toolStatus === "denied"
+    // The turn or omp process ended before the tool reported a result.
+    readonly property bool stopped: toolStatus === "stopped"
     readonly property bool hasDiff: diffLines.length > 0
     property bool userExpanded: false
     readonly property bool expanded: userExpanded || awaiting
     property string tab: hasDiff ? "diff" : "output"
 
     implicitHeight: frame.height
+    // Cards change height after they are laid out (streamed output, approvals opening and
+    // closing). Ask the list to place its rows again, once per frame, so neighbours never overlap.
+    onImplicitHeightChanged: if (ListView.view) Qt.callLater(ListView.view.forceLayout)
 
     function iconFor(name) {
         switch (name) {
@@ -48,7 +53,8 @@ Item {
         default: return "wrench"
         }
     }
-    readonly property color statusColor: awaiting ? Theme.sodium : failed ? Theme.danger : running ? Theme.accent : Theme.success
+    readonly property color statusColor: awaiting ? Theme.sodium : failed ? Theme.danger : running ? Theme.accent
+                                         : stopped ? Theme.textTertiary : Theme.success
 
     Rectangle {
         id: frame

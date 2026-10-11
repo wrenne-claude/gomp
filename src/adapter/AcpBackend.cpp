@@ -180,10 +180,16 @@ void AcpBackend::answerUi(const QString &requestId, const QJsonObject &response)
     const auto it = m_elicitations.constFind(requestId);
     if (it == m_elicitations.cend())
         return;
-    const auto rpcId = it.value();
+    const auto rpcId = it.value().rpcId;
+    const auto params = it.value().params;
     m_elicitations.erase(it);
     if (response.value("cancelled"_L1).toBool()) {
         respond(rpcId, {{"action"_L1, u"cancel"_s}});
+        return;
+    }
+    if (response.contains("answers"_L1)) {
+        respond(rpcId, {{"action"_L1, u"accept"_s},
+                        {"content"_L1, acp::askAnswerContent(params, response.value("answers"_L1).toArray())}});
         return;
     }
     QJsonValue value = response.contains("confirmed"_L1) ? response.value("confirmed"_L1) : response.value("value"_L1);
@@ -273,9 +279,9 @@ void AcpBackend::onServerRequest(const QJsonObject &frame)
 
     if (method == "session/request_permission"_L1) {
         m_permissions.insert(key, PermissionRequest{rpcId, params.value("options"_L1).toArray()});
-        emit agentEvent(acp::approvalFromPermission(key, params));
+        emit agentEvent(acp::approvalFromPermission(key, params, m_stream));
     } else if (method == "elicitation/create"_L1) {
-        m_elicitations.insert(key, rpcId);
+        m_elicitations.insert(key, Elicitation{rpcId, params});
         if (acp::isPlanElicitation(params))
             emit agentEvent(acp::planProposalFrom(key, params, m_stream));
         else

@@ -31,6 +31,9 @@ QList<AgentEvent> finishTurn(StreamState &state, const QString &stopReason);
 bool isPlanElicitation(const QJsonObject &params);
 PlanProposalEvent planProposalFrom(const QString &requestId, const QJsonObject &params, const StreamState &state);
 UiRequestEvent uiRequestFromElicitation(const QString &requestId, const QJsonObject &params);
-ApprovalRequestEvent approvalFromPermission(const QString &requestId, const QJsonObject &params);
+// The `ask` tool's form (fields q0, q0__other, q1, ...), and the form content for its answers.
+bool isAskElicitation(const QJsonObject &params);
+QJsonObject askAnswerContent(const QJsonObject &params, const QJsonArray &answers);
+ApprovalRequestEvent approvalFromPermission(const QString &requestId, const QJsonObject &params, const StreamState &st);
 
 } // namespace gomp::acp

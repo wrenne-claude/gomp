@@ -124,6 +124,7 @@ protected:
 
 private:
     [[nodiscard]] QString defaultModelSelector() const;
+    void applyApprovalPolicy(Workspace *w) const;
     void wire();
     void onOmpReady();
     void onAttention(Workspace *w, const QString &kind, const QString &title, const QString &body);

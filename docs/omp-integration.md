@@ -95,6 +95,15 @@ probe script, and reading the protocol definitions embedded in the binary
   (`session/load`, `session/set_mode plan`). After approval it hands the file back to RPC
   (`switch_session`). The adapter hides this; the UI just sees mode changes and a `PlanProposal`
   event. `--plan-yolo` (auto-approve) is offered as "Plan, then run".
+  **Plan-mode questions and approvals (omp 18.8).** Over ACP the `ask` tool arrives as one
+  `elicitation/create` form with fields `q0`, `q1`, … (a string with `oneOf`, or an array whose
+  `items.anyOf` lists the options, for multi-select) and a free-text `q<N>__other` each; the answer is
+  the form content with the chosen labels. gomp rebuilds it into the same question list RPC's `ask`
+  request carries. ACP also wraps `bash`, `edit`, `delete` and `move` in `session/request_permission`
+  unless `tools.approvalMode` is *explicitly* set to `yolo` (being yolo by default is not enough), and
+  the request names the exact `toolCallId`. gomp answers those itself when the effective approval mode
+  (and any per-tool `tools.approval` policy) would allow the call, so plan mode behaves as the
+  setting shown in Settings says.
 * **Fast** — `set_fast_mode`. **Slow** — `set_slow_mode` (when `slowModeSupported`).
 * **Goal** — `goal{op:create|pause|resume|drop|get}`, `goal_updated`; plan and goal exclude each other.
 * **Prewalk / Advisor** — launch flags `--prewalk`, `--advisor`; also settings.

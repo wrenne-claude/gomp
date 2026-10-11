@@ -84,6 +84,8 @@ public:
     void start(const LaunchOptions &options);
     // The configured default model ("provider/id", from modelRoles.default). A new session that
     // starts on another model gets a notice saying so, since omp falls back silently.
+    // tools.approvalMode and tools.approval, as omp resolves them for this project.
+    void setApprovalPolicy(const QString &mode, const QVariantMap &toolPolicies);
     void setExpectedModel(const QString &selector)
     {
         m_expectedModel = selector;
@@ -106,6 +108,8 @@ public:
     [[nodiscard]] int runningTools() const { return m_conversation->runningToolCount(); }
     [[nodiscard]] int pendingApprovals() const { return int(m_approvals.size()); }
     [[nodiscard]] double turnSeconds() const;
+    // Seconds since omp last sent anything during a turn: a stalled provider shows up here.
+    Q_INVOKABLE double quietSeconds() const;
 
     [[nodiscard]] QString mode() const { return m_mode; }
     [[nodiscard]] bool modeSwitching() const { return !m_requestedMode.isEmpty(); }
@@ -223,11 +227,16 @@ private:
     QString m_lastPrompt;
     QString m_pendingFollowUp; // sent when the current turn ends (plan refinement feedback)
     QElapsedTimer m_turnClock;
+    QElapsedTimer m_lastOutput;
     QTimer m_rateTimer;
     QTimer m_errorTimer;
     qint64 m_charsThisWindow = 0;
     bool m_historyLoaded = false;
     QString m_expectedModel;
+    QString m_approvalMode = QStringLiteral("yolo");
+    QVariantMap m_toolPolicies;
+    [[nodiscard]] bool approvalModeAllows(const QString &toolName) const;
+    void dropProcessRequests();
     bool m_checkModel = false;
     void checkStartupModel();
 };

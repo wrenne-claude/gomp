@@ -9,10 +9,20 @@ import Gomp.Core
 Item {
     id: screen
     readonly property Workspace ws: App.workspaces.current
-    readonly property bool wide: width >= 1100
+    // The inspector is as wide as you leave it (drag its edge; double-click resets), within what the
+    // window allows. It docks while the conversation keeps a readable column beside it, and floats
+    // over the conversation as a drawer otherwise.
+    readonly property int minConversation: 560
+    readonly property int maxInspector: Math.max(300, Math.min(900, width - (wide ? minConversation : 48)))
+    property int liveWidth: App.prefs.inspectorWidth
+    readonly property int inspectorWidth: Math.max(300, Math.min(maxInspector, liveWidth))
+    readonly property bool wide: width - Math.max(300, Math.min(900, liveWidth)) >= minConversation
     readonly property bool inspectorDocked: wide && Ui.inspectorOpen
     readonly property bool drawerOpen: !wide && Ui.inspectorOpen && ws !== null
-    readonly property int inspectorWidth: width >= 1900 ? 440 : 360
+    Connections {
+        target: App.prefs
+        function onChanged() { screen.liveWidth = App.prefs.inspectorWidth }
+    }
 
     EmptyAgent {
         anchors.fill: parent
@@ -51,11 +61,21 @@ Item {
             }
         }
         Inspector {
+            id: dockedInspector
             Layout.fillHeight: true
             Layout.preferredWidth: screen.inspectorDocked ? screen.inspectorWidth : 0
             visible: screen.inspectorDocked
             workspace: screen.ws
             docked: true
+            GSplitHandle {
+                x: -width / 2
+                height: parent.height
+                value: screen.inspectorWidth
+                from: 300
+                to: screen.maxInspector
+                onMoved: v => screen.liveWidth = v
+                onCommitted: v => App.prefs.inspectorWidth = v
+            }
         }
     }
 
@@ -74,11 +94,20 @@ Item {
         visible: screen.drawerOpen
         workspace: screen.ws
         docked: false
-        width: Math.min(360, screen.width - Theme.s6)
+        width: Math.min(screen.inspectorWidth, screen.width - Theme.s6)
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         x: visible ? screen.width - width : screen.width
         Behavior on x { NumberAnimation { duration: Theme.dSlow; easing.type: Theme.easeOut } }
+        GSplitHandle {
+            x: -width / 2 + Theme.s2
+            height: parent.height
+            value: drawer.width
+            from: 300
+            to: screen.maxInspector
+            onMoved: v => screen.liveWidth = v
+            onCommitted: v => App.prefs.inspectorWidth = v
+        }
     }
 
     OverlayRouter { workspace: screen.ws }

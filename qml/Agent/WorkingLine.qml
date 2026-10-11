@@ -38,8 +38,25 @@ Row {
             repeat: true
             running: line.visible && line.workspace && line.workspace.busy
             triggeredOnStart: true
-            onTriggered: elapsed.seconds = line.workspace.turnSeconds
+            onTriggered: {
+                elapsed.seconds = line.workspace.turnSeconds
+                line.quiet = line.workspace.quietSeconds()
+            }
         }
+    }
+    // A long silence while the model should be producing tokens: say so, so a stalled provider
+    // is not mistaken for gomp hanging. Tools and questions are legitimately quiet.
+    property real quiet: 0
+    readonly property bool stalled: quiet >= 8 && line.workspace !== null
+                                    && (line.workspace.activity === Workspace.Waiting
+                                        || line.workspace.activity === Workspace.Thinking
+                                        || line.workspace.activity === Workspace.Streaming)
+    GText {
+        anchors.verticalCenter: parent.verticalCenter
+        visible: line.stalled
+        text: qsTr("no output from the model for %1").arg(Fmt.duration(Math.floor(line.quiet) * 1000))
+        role: "caption"
+        tone: "caution"
     }
     Row {
         anchors.verticalCenter: parent.verticalCenter

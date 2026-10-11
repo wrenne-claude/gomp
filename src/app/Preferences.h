@@ -26,6 +26,7 @@ class Preferences : public QObject
     Q_PROPERTY(bool firstRunDone READ firstRunDone WRITE setFirstRunDone NOTIFY changed)
     Q_PROPERTY(QStringList recentProjects READ recentProjects NOTIFY changed)
     Q_PROPERTY(bool inspectorOpen READ inspectorOpen WRITE setInspectorOpen NOTIFY changed)
+    Q_PROPERTY(int inspectorWidth READ inspectorWidth WRITE setInspectorWidth NOTIFY changed)
     Q_PROPERTY(QString lastScreen READ lastScreen WRITE setLastScreen NOTIFY changed)
 public:
     explicit Preferences(QObject *parent = nullptr);
@@ -55,6 +56,8 @@ public:
     [[nodiscard]] QStringList recentProjects() const;
     Q_INVOKABLE void addRecentProject(const QString &dir);
     [[nodiscard]] bool inspectorOpen() const;
+    [[nodiscard]] int inspectorWidth() const;
+    void setInspectorWidth(int v);
     void setInspectorOpen(bool v);
     [[nodiscard]] QString lastScreen() const;
     void setLastScreen(const QString &v);

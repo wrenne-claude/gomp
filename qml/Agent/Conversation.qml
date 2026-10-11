@@ -23,7 +23,9 @@ Item {
         spacing: Theme.compact ? Theme.s3 : Theme.s4
         topMargin: Theme.s5
         bottomMargin: Theme.s5
-        reuseItems: true
+        // Not reused: a recycled card keeps its previous row's expanded state, and with it a height
+        // the list did not lay out for.
+        reuseItems: false
         cacheBuffer: 1200
         boundsBehavior: Flickable.StopAtBounds
         maximumFlickVelocity: 4000

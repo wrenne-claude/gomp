@@ -507,15 +507,27 @@ void ConversationModel::apply(const AgentEvent &event)
 
 void ConversationModel::attachApproval(const ApprovalRequestEvent &a)
 {
-    // Attach to the newest running call of that tool; otherwise show a standalone approval row.
-    for (auto i = m_rows.size() - 1; i >= 0; --i) {
+    auto attach = [&](qsizetype i) {
         auto &row = m_rows[i];
+        row.approvalId = a.requestId;
+        row.toolStatus = u"awaiting"_s;
+        markDirty(int(i));
+        flush();
+    };
+    // The exact call when the transport names it.
+    if (!a.toolCallId.isEmpty()) {
+        if (const int r = findToolRow(a.toolCallId); r >= 0 && m_rows[r].approvalId.isEmpty()) {
+            attach(r);
+            return;
+        }
+    }
+    // Otherwise the newest call of that tool that is live in this turn. Rows from earlier turns
+    // never qualify: a card left "running" by an interrupted turn must not collect new approvals.
+    for (auto i = m_rows.size() - 1; i >= 0; --i) {
+        const auto &row = m_rows[i];
         if (row.kind == Kind::Tool && row.toolStatus == "running"_L1 && row.approvalId.isEmpty()
-            && (a.toolName.isEmpty() || row.toolName == a.toolName)) {
-            row.approvalId = a.requestId;
-            row.toolStatus = u"awaiting"_s;
-            markDirty(int(i));
-            flush();
+            && m_runningTools.contains(row.toolCallId) && (a.toolName.isEmpty() || row.toolName == a.toolName)) {
+            attach(i);
             return;
         }
     }
@@ -526,8 +538,31 @@ void ConversationModel::attachApproval(const ApprovalRequestEvent &a)
     row.toolDetail = a.reason;
     row.toolStatus = u"awaiting"_s;
     row.approvalId = a.requestId;
+    row.toolCallId = a.toolCallId;
     row.startedMs = m_clock.elapsed();
     appendRow(std::move(row));
+}
+
+void ConversationModel::settleTools(const QString &status)
+{
+    // Called when a turn or process ends: nothing can still be running or waiting for approval.
+    bool changed = false;
+    for (qsizetype i = 0; i < m_rows.size(); ++i) {
+        auto &row = m_rows[i];
+        if (row.kind != Kind::Tool || (row.toolStatus != "running"_L1 && row.toolStatus != "awaiting"_L1))
+            continue;
+        row.toolStatus = status;
+        row.approvalId.clear();
+        if (row.startedMs > 0 && row.durationMs <= 0)
+            row.durationMs = m_clock.elapsed() - row.startedMs;
+        markDirty(int(i));
+        changed = true;
+    }
+    if (changed || !m_runningTools.isEmpty()) {
+        m_runningTools.clear();
+        flush();
+        emit toolActivityChanged();
+    }
 }
 
 void ConversationModel::resolveApproval(const QString &approvalId, bool approved)

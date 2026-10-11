@@ -61,6 +61,9 @@ public:
     // Event intake (called by Workspace).
     void apply(const AgentEvent &event);
     void attachApproval(const ApprovalRequestEvent &approval);
+    // Marks every tool still running or awaiting approval as `status` ("stopped" when a turn or
+    // the omp process ended without reporting its result).
+    void settleTools(const QString &status = QStringLiteral("stopped"));
     void resolveApproval(const QString &approvalId, bool approved);
     void addNotice(const QString &level, const QString &text);
     void addError(const QString &text, bool retryable);

@@ -170,6 +170,79 @@ PlanProposalEvent planProposalFrom(const QString &requestId, const QJsonObject &
     return ev;
 }
 
+bool isAskElicitation(const QJsonObject &params)
+{
+    static const QRegularExpression question(uR"(^q\d+$)"_s);
+    const auto props = params.value("requestedSchema"_L1).toObject().value("properties"_L1).toObject();
+    for (auto it = props.begin(); it != props.end(); ++it) {
+        if (question.match(it.key()).hasMatch())
+            return true;
+    }
+    return false;
+}
+
+namespace {
+
+// omp's `ask` tool over ACP: one form with q0, q1, ... (a string with oneOf, or an array whose
+// items have anyOf, for multi-select) plus a free-text q<N>__other per question. Rebuilt into the
+// same question list the RPC transport sends, so one UI serves both.
+QJsonArray askQuestions(const QJsonObject &props)
+{
+    QJsonArray questions;
+    for (int i = 0;; ++i) {
+        const auto key = u"q"_s + QString::number(i);
+        if (!props.contains(key) && !props.contains(key + u"__other"_s))
+            break;
+        const auto q = props.value(key).toObject();
+        const bool multi = q.value("type"_L1).toString() == "array"_L1;
+        const auto choices = multi ? q.value("items"_L1).toObject().value("anyOf"_L1).toArray() : q.value("oneOf"_L1).toArray();
+        QJsonArray options;
+        int recommended = -1;
+        for (const auto &cv : choices) {
+            const auto c = cv.toObject();
+            const auto label = c.value("const"_L1).toString(c.value("title"_L1).toString());
+            if (label == q.value("default"_L1).toString())
+                recommended = int(options.size());
+            QJsonObject option{{"label"_L1, label}};
+            if (c.contains("description"_L1))
+                option.insert("description"_L1, c.value("description"_L1));
+            options.append(option);
+        }
+        QJsonObject question{{"id"_L1, key},
+                             {"question"_L1, q.value("title"_L1).toString(props.value(key + u"__other"_s).toObject().value("title"_L1).toString())},
+                             {"header"_L1, q.value("description"_L1).toString()},
+                             {"multi"_L1, multi},
+                             {"options"_L1, options}};
+        if (recommended >= 0)
+            question.insert("recommended"_L1, recommended);
+        questions.append(question);
+    }
+    return questions;
+}
+
+} // namespace
+
+QJsonObject askAnswerContent(const QJsonObject &params, const QJsonArray &answers)
+{
+    const auto props = params.value("requestedSchema"_L1).toObject().value("properties"_L1).toObject();
+    QJsonObject content;
+    for (const auto &av : answers) {
+        const auto a = av.toObject();
+        const auto key = a.value("id"_L1).toString();
+        if (!props.contains(key) && !props.contains(key + u"__other"_s))
+            continue;
+        const auto selected = a.value("selectedOptions"_L1).toArray();
+        if (props.value(key).toObject().value("type"_L1).toString() == "array"_L1)
+            content.insert(key, selected);
+        else if (!selected.isEmpty())
+            content.insert(key, selected.first());
+        const auto custom = a.value("customInput"_L1).toString().trimmed();
+        if (!custom.isEmpty())
+            content.insert(key + u"__other"_s, custom);
+    }
+    return content;
+}
+
 UiRequestEvent uiRequestFromElicitation(const QString &requestId, const QJsonObject &params)
 {
     UiRequestEvent ev;
@@ -177,6 +250,15 @@ UiRequestEvent uiRequestFromElicitation(const QString &requestId, const QJsonObj
     const auto message = params.value("message"_L1).toString();
     ev.title = message.section(u'\n', 0, 0);
     ev.message = message.section(u'\n', 1);
+    if (isAskElicitation(params)) {
+        ev.kind = UiRequestEvent::Kind::Ask;
+        const auto questions = askQuestions(params.value("requestedSchema"_L1).toObject().value("properties"_L1).toObject());
+        // A single question is the title already; repeating it below would read twice.
+        if (questions.size() == 1)
+            ev.title = QString{};
+        ev.raw = QJsonObject{{"questions"_L1, questions}};
+        return ev;
+    }
     const auto value = params.value("requestedSchema"_L1).toObject().value("properties"_L1).toObject()
                            .value("value"_L1).toObject();
     const auto type = value.value("type"_L1).toString();
@@ -194,14 +276,18 @@ UiRequestEvent uiRequestFromElicitation(const QString &requestId, const QJsonObj
     return ev;
 }
 
-ApprovalRequestEvent approvalFromPermission(const QString &requestId, const QJsonObject &params)
+ApprovalRequestEvent approvalFromPermission(const QString &requestId, const QJsonObject &params, const StreamState &st)
 {
     const auto toolCall = params.value("toolCall"_L1).toObject();
     ApprovalRequestEvent ev;
     ev.requestId = requestId;
     ev.title = toolCall.value("title"_L1).toString();
-    ev.toolName = toolCall.value("_meta"_L1).toObject().value("toolName"_L1).toString(
-        toolCall.value("kind"_L1).toString());
+    ev.toolCallId = toolCall.value("toolCallId"_L1).toString();
+    // The permission request carries no tool name; the matching tool_call update does.
+    ev.toolName = st.toolNames.value(ev.toolCallId,
+                                     toolCall.value("_meta"_L1).toObject().value("toolName"_L1).toString(
+                                         toolCall.value("kind"_L1).toString() == "execute"_L1 ? u"bash"_s : QString{}));
+    ev.clientGated = true;
     return ev;
 }
 

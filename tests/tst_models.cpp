@@ -36,11 +36,34 @@ private slots:
         QCOMPARE(m.runningToolCount(), 1);
         const auto row = m.index(0);
         QCOMPARE(m.data(row, ConversationModel::DiffAddedRole).toInt(), 1);
-        m.attachApproval(ApprovalRequestEvent{u"ui1"_s, u"edit"_s, u"Allow tool: edit"_s, {}});
+        m.attachApproval(ApprovalRequestEvent{u"ui1"_s, u"edit"_s, u"Allow tool: edit"_s, {}, {}, false});
         QCOMPARE(m.data(row, ConversationModel::ToolStatusRole).toString(), u"awaiting"_s);
         m.resolveApproval(u"ui1"_s, false);
         QCOMPARE(m.data(row, ConversationModel::ToolStatusRole).toString(), u"denied"_s);
         QCOMPARE(m.runningToolCount(), 0);
+    }
+    void approvalsNeverLandOnStaleCalls()
+    {
+        ConversationModel m;
+        // A bash call from an earlier turn whose end event never arrived (an interrupted turn).
+        m.apply(ToolStartEvent{u"old"_s, u"bash"_s, {{"command"_L1, u"ls"_s}}, {}, {}});
+        m.settleTools();
+        QCOMPARE(m.data(m.index(0), ConversationModel::ToolStatusRole).toString(), u"stopped"_s);
+        QCOMPARE(m.runningToolCount(), 0);
+        // A new approval for bash must not reopen it; it gets its own row.
+        m.attachApproval(ApprovalRequestEvent{u"a1"_s, u"bash"_s, u"Allow tool: bash"_s, {}, {}, false});
+        QCOMPARE(m.data(m.index(0), ConversationModel::ToolStatusRole).toString(), u"stopped"_s);
+        QCOMPARE(m.rowCount(), 2);
+        QCOMPARE(m.data(m.index(1), ConversationModel::ApprovalIdRole).toString(), u"a1"_s);
+    }
+    void approvalFindsItsExactCall()
+    {
+        ConversationModel m;
+        m.apply(ToolStartEvent{u"first"_s, u"bash"_s, {{"command"_L1, u"make"_s}}, {}, {}});
+        m.apply(ToolStartEvent{u"second"_s, u"bash"_s, {{"command"_L1, u"make test"_s}}, {}, {}});
+        m.attachApproval(ApprovalRequestEvent{u"a1"_s, u"bash"_s, u"make"_s, {}, u"first"_s, true});
+        QCOMPARE(m.data(m.index(0), ConversationModel::ToolStatusRole).toString(), u"awaiting"_s);
+        QCOMPARE(m.data(m.index(1), ConversationModel::ToolStatusRole).toString(), u"running"_s);
     }
     void toolTitles()
     {

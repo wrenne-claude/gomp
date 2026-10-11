@@ -82,6 +82,12 @@ AppController *AppController::instance()
 
 // modelRoles.default without a trailing thinking level ("provider/id:high" -> "provider/id"). Ids can
 // contain ':' themselves ("z-ai/glm-5.3-flash:batch"), so only known levels are stripped.
+void AppController::applyApprovalPolicy(Workspace *w) const
+{
+    const auto mode = m_config->liveValue(u"tools.approvalMode"_s).toString();
+    w->setApprovalPolicy(mode.isEmpty() ? u"yolo"_s : mode, m_config->liveValue(u"tools.approval"_s).toObject().toVariantMap());
+}
+
 QString AppController::defaultModelSelector() const
 {
     auto selector = m_config->liveValue(u"modelRoles"_s).toObject().value("default"_L1).toString();
@@ -109,8 +115,10 @@ void AppController::wire()
         });
 
     connect(m_workspaces, &WorkspaceManager::workspaceAdded, this, [this](Workspace *w) {
-        if (!w->isMock())
+        if (!w->isMock()) {
             w->setExpectedModel(defaultModelSelector());
+            applyApprovalPolicy(w);
+        }
         connect(w, &Workspace::attention, this,
                 [this, w](const QString &kind, const QString &title, const QString &body) { onAttention(w, kind, title, body); });
         connect(w, &Workspace::toast, this, &AppController::toast);
@@ -143,8 +151,10 @@ void AppController::wire()
     connect(m_config, &ConfigStore::loaded, m_palette, &PaletteModel::rebuild);
     connect(m_config, &ConfigStore::loaded, this, [this] {
         for (int i = 0; i < m_workspaces->rowCount(); ++i) {
-            if (auto *w = m_workspaces->at(i); w && !w->isMock())
+            if (auto *w = m_workspaces->at(i); w && !w->isMock()) {
                 w->setExpectedModel(defaultModelSelector());
+                applyApprovalPolicy(w);
+            }
         }
     });
     connect(m_notifier, &Notifier::activated, this, [this](const QString &key) {

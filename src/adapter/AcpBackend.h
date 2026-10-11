@@ -56,7 +56,11 @@ private:
     LaunchOptions m_options;
     QHash<qint64, RpcReply> m_pending;
     QHash<QString, PermissionRequest> m_permissions;
-    QHash<QString, QJsonValue> m_elicitations;
+    struct Elicitation {
+        QJsonValue rpcId;
+        QJsonObject params;
+    };
+    QHash<QString, Elicitation> m_elicitations;
     qint64 m_nextId = 1;
     QString m_sessionId;
     bool m_prompting = false;

@@ -54,6 +54,8 @@ bool Preferences::firstRunDone() const { return get(u"app/firstRunDone"_s, false
 void Preferences::setFirstRunDone(bool v) { set(u"app/firstRunDone"_s, v); }
 bool Preferences::inspectorOpen() const { return get(u"window/inspectorOpen"_s, true).toBool(); }
 void Preferences::setInspectorOpen(bool v) { set(u"window/inspectorOpen"_s, v); }
+int Preferences::inspectorWidth() const { return get(u"window/inspectorWidth"_s, 400).toInt(); }
+void Preferences::setInspectorWidth(int v) { set(u"window/inspectorWidth"_s, v); }
 QString Preferences::lastScreen() const { return get(u"window/lastScreen"_s, u"agent"_s).toString(); }
 void Preferences::setLastScreen(const QString &v) { set(u"window/lastScreen"_s, v); }
 

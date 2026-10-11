@@ -16,7 +16,13 @@ Item {
         if (request) {
             input.text = request.prefill || ""
             editor.text = request.prefill || ""
-            answers = ({})
+            // Start each question on omp's recommended option, so "Send answer" alone accepts it.
+            const start = {}
+            for (const q of (request.questions || [])) {
+                if (q.recommended !== undefined && q.recommended !== null && q.options[q.recommended])
+                    start[q.id] = { selected: [q.options[q.recommended].label], custom: "" }
+            }
+            answers = start
             sheet.open()
         } else {
             sheet.close()
@@ -33,7 +39,8 @@ Item {
         const out = []
         for (let i = 0; i < qs.length; ++i) {
             const a = host.answers[qs[i].id] || {}
-            out.push({ id: qs[i].id, selected: a.selected || [], customInput: a.custom || "" })
+            // omp's AskAnswer: exact option labels plus optional free text.
+            out.push({ id: qs[i].id, selectedOptions: a.selected || [], customInput: a.custom || "" })
         }
         submit(out)
     }
